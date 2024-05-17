@@ -1,0 +1,65 @@
+# SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "ontprox"
+version = "0.1.0"
+license = "AGPL-3.0-or-later"
+authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
+description = """
+    A tiny HTTP service that allows to fetch an RDF ontology
+    that is available in one/a few format(s),
+    in others.
+    """
+repository = "https://github.com/hoijui/ontprox"
+homepage = "https://github.com/hoijui/ontprox"
+keywords = ["cli", "ci", "utility", "parsing", "git"] # TODO
+categories = ["command-line-utilities", "filesystem", "text-processing"] # TODO
+publish = false
+readme = "README.md"
+edition = "2021"
+
+[lints.rust]
+rust_2021_compatibility = "warn"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+wildcard_enum_match_arm = "warn"
+string_slice = "warn"
+indexing_slicing = "warn"
+clone_on_ref_ptr = "warn"
+try_err = "warn"
+shadow_reuse = "allow"
+empty_structs_with_brackets = "warn"
+else_if_without_else = "warn"
+use_debug = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+#default_trait_access = "allow"
+option_if_let_else = "allow"
+
+[dependencies]
+askama = { version = "0.12" }
+axum = { version = "0.7", features = ["multipart"] }
+axum-extra = { version = "0.9" }
+dirs = "5.0"
+futures = "0.3"
+infer = "0.15"
+mediatype = "0.19"
+once_cell = "1.19"
+phf = { version = "0.11", features = ["macros"] }
+regex = "1.10"
+reqwest = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
+tokio = { version = "1.28", features = ["full"] }
+tokio-util = { version = "0.7", features = ["io"] }
+tower = { version = "0.4", features = ["util"] }
+tower-http = { version = "0.5.0", features = ["fs", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = "2.5"
