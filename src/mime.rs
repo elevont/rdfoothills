@@ -455,7 +455,6 @@ impl Type {
     {
         let mime_type_cow = mime_type.into();
         let media_type = MediaType::parse(mime_type_cow.as_ref())?;
-        dbg!(&media_type);
         Self::from_media_type(&media_type)
         // let mime_type_cow = mime_type.into();
         // Ok(match mime_type_cow.as_ref() {
