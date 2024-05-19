@@ -14,6 +14,9 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use url::Url;
 
+/// If the requested format is not present yet,
+/// which action to preffer to get it.
+/// The other action will be tried if the first one fails.
 #[derive(Debug, Copy, Clone)]
 pub enum DlOrConv {
     Download,
@@ -32,9 +35,6 @@ pub struct OntRequest {
     /// This is what our client wants,
     /// and what we try to sent to it.
     pub mime_type: mime::Type,
-    /// If the requested format is not present yet,
-    /// which action to preffer to get it.
-    /// The other action will be tried if the first one fails.
     pub pref: DlOrConv,
 }
 
