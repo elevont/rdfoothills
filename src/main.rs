@@ -3,13 +3,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 mod cache;
+mod cli;
+mod constants;
 mod hasher;
+mod logger;
 mod mime;
 mod ont_request;
 mod util;
 
 use crate::ont_request::DlOrConv;
 use crate::ont_request::OntRequest;
+use axum::extract::State;
 use axum::{
     body::Body,
     http::{HeaderMap, StatusCode},
@@ -18,31 +22,73 @@ use axum::{
     Router,
 };
 use cache::*;
+use cli_utils::BoxResult;
 use std::net::SocketAddr;
 use std::path::Path as StdPath;
+use std::path::PathBuf;
 use tower_http::trace::TraceLayer;
+use tracing_subscriber::filter::LevelFilter;
 use util::*;
 
-#[tokio::main]
-async fn main() {
-    init_tracing();
+use git_version::git_version;
 
-    create_dir(ONTS_CACHE_DIR.as_path()).await;
+// This tests rust code in the README with doc-tests.
+// Though, It will not appear in the generated documentaton.
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;
+
+pub const VERSION: &str = git_version!(cargo_prefix = "", fallback = "unknown");
+
+#[derive(Clone, Debug)]
+pub struct Config {
+    addr: SocketAddr,
+    cache_root: PathBuf,
+    prefere_conversion: DlOrConv,
+}
+
+fn main() -> BoxResult<()> {
+    let log_reload_handle = logger::setup()?;
+
+    let cli_args = cli::parse()?;
+
+    if cli_args.verbose {
+        logger::set_log_level(&log_reload_handle, LevelFilter::DEBUG)?;
+    } else if cli_args.quiet {
+        logger::set_log_level(&log_reload_handle, LevelFilter::WARN)?;
+    } else {
+        logger::set_log_level(&log_reload_handle, LevelFilter::INFO)?;
+    }
+
+    run_proxy(&cli_args.proxy_conf);
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn run_proxy(config: &Config) {
+    create_dir(config.cache_root.as_path()).await;
 
     // build our application
-    let route = Router::new().route("/", get(handler_rdf));
-
-    let addr = [127, 0, 0, 1]; // TODO Make configurable
-    let port: u16 = 3000; // TODO Make configurable
-    let serving_addr = SocketAddr::from((addr, port));
+    let route = Router::new().route("/", get(handler_rdf).with_state(config.clone()));
 
     // run it
-    tokio::join!(serve(route, serving_addr));
+    tokio::join!(serve(route, config.addr));
 }
 
 async fn serve(app: Router, addr: SocketAddr) {
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    tracing::debug!("listening on {}", addr);
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .map_err(|err| {
+            let addition_opt = if addr.port() < 1024 {
+                format!(" - You might need root priviledges to listen on port {}, because it is smaller then 1024", addr.port())
+            } else {
+                String::new()
+            };
+            format!("Failed to listen on {addr}{addition_opt}: {err}")
+        })
+        .unwrap();
+    tracing::info!("listening on {addr}");
     axum::serve(listener, app.layer(TraceLayer::new_for_http()))
         .await
         .unwrap();
@@ -104,8 +150,11 @@ async fn try_convert(
     }
 }
 
-async fn handler_rdf(ont_request: OntRequest) -> Result<impl IntoResponse, impl IntoResponse> {
-    let ont_cache_dir = ont_dir(&ont_request.uri);
+async fn handler_rdf(
+    State(config): State<Config>,
+    ont_request: OntRequest,
+) -> Result<impl IntoResponse, impl IntoResponse> {
+    let ont_cache_dir = ont_dir(&config.cache_root, &ont_request.uri);
     let ont_file_required = ont_file(&ont_cache_dir, ont_request.mime_type);
 
     let ont_might_be_cached = ensure_dir_exists(&ont_cache_dir)

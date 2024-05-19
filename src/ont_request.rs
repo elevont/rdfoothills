@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use crate::mime;
+use crate::{mime, Config};
 use axum::{
     async_trait,
     extract::{FromRequestParts, Query},
@@ -92,22 +92,23 @@ fn extract_query_accept(
 }
 
 #[async_trait]
-impl<S> FromRequestParts<S> for OntRequest
-where
-    S: Send + Sync,
-{
+impl FromRequestParts<Config> for OntRequest {
     type Rejection = Response;
 
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &Config,
+    ) -> Result<Self, Self::Rejection> {
         let query_params: Query<HashMap<String, String>> =
             parts.extract().await.map_err(IntoResponse::into_response)?;
         let headers: HeaderMap = parts.extract().await.map_err(IntoResponse::into_response)?;
+        // let config: State<Config> = state.into().await.map_err(IntoResponse::into_response)?;
 
         let mime_type = extract_requested_content_type(&headers)?;
         let uri = extract_uri(&query_params)?;
         let query_mime_type = extract_query_accept(&query_params)?;
 
-        let pref = DlOrConv::Download; // TODO Maybe we want to allow setting this with a query parameter as well?
+        let pref = state.prefere_conversion; // TODO Maybe we want to allow setting this with a query parameter as well?
         Ok(Self {
             uri,
             query_mime_type,

@@ -11,24 +11,21 @@ use axum::{
     http::{header::CONTENT_TYPE, HeaderMap, StatusCode},
 };
 use mediatype::MediaType;
-use once_cell::sync::Lazy;
 use reqwest::Url;
 use std::ffi::OsStr;
 use std::io;
 use std::{path::Path as StdPath, path::PathBuf};
 
-pub static CACHE_ROOT: Lazy<PathBuf> = Lazy::new(|| dirs::cache_dir().unwrap().join("ont-serv"));
-pub static ONTS_CACHE_DIR: Lazy<PathBuf> = Lazy::new(|| CACHE_ROOT.join("ontologies"));
 pub const ONT_FILE_PREFIX: &str = "ontology";
 
-pub fn ont_dir(uri: &Url) -> PathBuf {
+pub fn ont_dir(cache_root: &StdPath, uri: &Url) -> PathBuf {
     let url_nameified = url2fname(uri);
     // NOTE Because the nameified version of the URL could be equal
     //      for different URLs, we append its hash.
     let url_hash = hasher::hash_num(uri);
     let url_dir_name = format!("{url_nameified}-{url_hash}");
 
-    ONTS_CACHE_DIR.join(url_dir_name)
+    cache_root.join("ontologies").join(url_dir_name)
 }
 
 pub async fn search_ont_files(ont_cache_dir: &StdPath, all: bool) -> io::Result<Vec<PathBuf>> {

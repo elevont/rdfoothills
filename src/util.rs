@@ -13,20 +13,9 @@ use std::ffi::OsStr;
 use std::io;
 use std::path::Path as StdPath;
 use tokio_util::io::ReaderStream;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use url::Url;
 
 use crate::mime;
-
-pub fn init_tracing() {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "ontprox=debug,tower_http=debug".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
-}
 
 pub async fn create_dir<P: AsRef<StdPath> + Send>(dir: P) {
     create_dir_res(dir.as_ref())
