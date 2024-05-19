@@ -456,27 +456,8 @@ impl Type {
         let mime_type_cow = mime_type.into();
         let media_type = MediaType::parse(mime_type_cow.as_ref())?;
         Self::from_media_type(&media_type)
-        // let mime_type_cow = mime_type.into();
-        // Ok(match mime_type_cow.as_ref() {
-        //     MIME_TYPE_HTML | MIME_TYPE_HTML_2 => Self::Html,
-        //     MIME_TYPE_JSON_LD | MIME_TYPE_JSON_LD_2 => Self::JsonLd,
-        //     MIME_TYPE_N3 | MIME_TYPE_N3_2 => Self::N3,
-        //     MIME_TYPE_N_QUADS => Self::NQuads,
-        //     MIME_TYPE_N_TRIPLES => Self::NTriples,
-        //     MIME_TYPE_RDF_JSON => Self::RdfJson,
-        //     MIME_TYPE_RDF_XML => Self::RdfXml,
-        //     MIME_TYPE_TRIG => Self::TriG,
-        //     MIME_TYPE_TRIX => Self::TriX,
-        //     MIME_TYPE_TURTLE => Self::Turtle,
-        //     _ => {
-        //         return Err(ParseError::UnrecognizedContentType(
-        //             mime_type_cow.into_owned(),
-        //         ))
-        //     }
-        // })
     }
 
-    // pub fn from_media_type<'a: 'static>(media_type: &'a MediaType<'a>) -> Result<Self, ParseError> {
     pub fn from_media_type(media_type: &MediaType) -> Result<Self, ParseError> {
         // let value_opt = media_type2type(media_type);
         if media_type.essence() == MEDIA_TYPE_TEXT_PLAIN {
@@ -484,20 +465,6 @@ impl Type {
         }
         media_type2type(media_type)
             .ok_or_else(|| ParseError::UnrecognizedContentType(media_type.to_string()))
-        // Ok(Self::Html)
-        // Ok(match media_type {
-        //     MEDIA_TYPE_HTML | MEDIA_TYPE_HTML_2 => Self::Html,
-        //     MEDIA_TYPE_JSON_LD | MEDIA_TYPE_JSON_LD_2 => Self::JsonLd,
-        //     MEDIA_TYPE_N3 | MEDIA_TYPE_N3_2 => Self::N3,
-        //     MEDIA_TYPE_N_QUADS => Self::NQuads,
-        //     MEDIA_TYPE_N_TRIPLES => Self::NTriples,
-        //     MEDIA_TYPE_RDF_JSON => Self::RdfJson,
-        //     MEDIA_TYPE_RDF_XML => Self::RdfXml,
-        //     MEDIA_TYPE_TRIG => Self::TriG,
-        //     MEDIA_TYPE_TRIX => Self::TriX,
-        //     MEDIA_TYPE_TURTLE => Self::Turtle,
-        //     _ => return Err(ParseError::UnrecognizedContentType(media_type.to_string())),
-        // })
     }
 
     pub fn from_file_ext(file_ext: &str) -> Result<Self, ParseError> {
@@ -539,12 +506,6 @@ impl Type {
         let media_typ = MediaType::parse(infer_typ.mime_type())
             .map_err(|_err| ParseError::UnrecognizedContent)?;
         Self::from_media_type(&media_typ)
-        // .map(
-        //     |tpy| {
-        //         let media_type = MediaType::parse(tpy.mime_type());
-        //         Self::from_media_type(media_type)
-        //     },
-        // ).transpose().unwrap()
     }
 
     #[must_use]
@@ -760,8 +721,7 @@ impl Type {
         self == Self::default()
     }
 
-    // pub fn is_default(self) -> Term {
+    // pub fn rdf_literal(self) -> Term {
     //     Term::Literal(Literal::new_simple_literal(self.mime_type)),
     // }
 }
-// format!("'content-type' is invalid/unsupported; needs to be one of {}", RdfFormat::all().join(", "))
