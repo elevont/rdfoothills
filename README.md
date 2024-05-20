@@ -28,7 +28,7 @@ SPDX-License-Identifier: CC0-1.0
     https://github.com/hoijui/ontprox/workflows/build/badge.svg)](
     https://github.com/hoijui/ontprox/actions)
 
-A tiny HTTP service that allows to fetch an RDF ontology
+A tiny HTTP service that allows to fetch an [RDF] [ontology]
 that is available in one/a few format(s),
 in others.
 
@@ -122,9 +122,11 @@ If all goes well,
 the executable can be found at `target/debug/ontprox`.
 
 [CURL]: https://curl.se/
+[ontology]: https://en.wikipedia.org/wiki/Ontology_(information_science)
 [Open Know-How]: https://github.com/iop-alliance/OpenKnowHow
 [PATH]: https://en.wikipedia.org/wiki/PATH_(variable)
 [pyLODE]: https://github.com/RDFLib/pyLODE
+[RDF]: https://www.w3.org/RDF/
 [rdftools]: https://github.com/hoijui/rdftools
 [RDFlib]: https://rdflib.readthedocs.io
 [RustUp]: https://rustup.rs/
