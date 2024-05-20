@@ -51,6 +51,15 @@ Caching is involved!
 
 ## Usage
 
+### Container
+
+This tool is part of [RDF-tools]
+(not to be confused with [rdftools]),
+a [Docker] image, containing a collection of RDF related
+CLI and web-service tools.
+To use the tool alone/directly,
+follow the steps in the next few sections.
+
 ### Prerequisites
 
 You need to have [`pylode`][pyLODE]
@@ -122,11 +131,13 @@ If all goes well,
 the executable can be found at `target/debug/ontprox`.
 
 [CURL]: https://curl.se/
+[Docker]: https://en.wikipedia.org/wiki/Docker_(software)
 [ontology]: https://en.wikipedia.org/wiki/Ontology_(information_science)
 [Open Know-How]: https://github.com/iop-alliance/OpenKnowHow
 [PATH]: https://en.wikipedia.org/wiki/PATH_(variable)
 [pyLODE]: https://github.com/RDFLib/pyLODE
 [RDF]: https://www.w3.org/RDF/
+[RDF-tools]: https://gitlab.com/OSEGermany/rdf-tools
 [rdftools]: https://github.com/hoijui/rdftools
 [RDFlib]: https://rdflib.readthedocs.io
 [RustUp]: https://rustup.rs/
