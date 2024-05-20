@@ -94,6 +94,49 @@ $ cargo run
 listening on 127.0.0.1:3000
 ```
 
+The available CLI arguments:
+
+```text
+$ ontprox --help
+    A tiny HTTP service that allows to fetch an RDF ontology
+    that is available in one/a few format(s),
+    in others.
+
+
+Usage: ontprox [OPTIONS]
+
+Options:
+  -V, --version
+          Print version information and exit. May be combined with -q,--quiet, to really only output the version string.
+
+  -v, --verbose
+          more verbose output (useful for debugging)
+
+  -q, --quiet
+          Minimize or suppress output to stderr; stdout is never used by this program, with or without this option set.
+
+  -p, --port <PORT>
+          the IP port to host this service on
+
+          [default: 3000]
+
+  -a, --address <IP_ADDRESS>
+          the IP address (v4 or v6) to host this service on
+
+          [default: 127.0.0.1]
+
+  -c, --cache-dir <DIR_PATH>
+          a variable key-value pair to be used for substitution in the text
+
+          [default: /home/hoijui/.cache/ontprox]
+
+  -C, --prefere-conversion
+          Preffer conversion from a cached format over downloading the requested format directly from the supplied URI.
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
 ### Fetches
 
 (see [Run](#run) first)
