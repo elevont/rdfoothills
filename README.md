@@ -121,11 +121,11 @@ cargo build
 If all goes well,
 the executable can be found at `target/debug/ontprox`.
 
-[RDFlib]: https://rdflib.readthedocs.io
+[CURL]: https://curl.se/
+[Open Know-How]: https://github.com/iop-alliance/OpenKnowHow
+[PATH]: https://en.wikipedia.org/wiki/PATH_(variable)
 [pyLODE]: https://github.com/RDFLib/pyLODE
+[rdftools]: https://github.com/hoijui/rdftools
+[RDFlib]: https://rdflib.readthedocs.io
 [RustUp]: https://rustup.rs/
 [ValueFlows]: https://valueflo.ws/
-[Open Know-How]: https://github.com/iop-alliance/OpenKnowHow
-[CURL]: https://curl.se/
-[rdftools]: https://github.com/hoijui/rdftools
-[PATH]: https://en.wikipedia.org/wiki/PATH_(variable)
