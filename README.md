@@ -78,6 +78,16 @@ As for now, you have two choices:
 
 (see [Install](#install) and [Prerequisites](#prerequisites) first)
 
+using the compiled binary:
+
+```shell
+$ ontprox
+...
+listening on 127.0.0.1:3000
+```
+
+or from source:
+
 ```shell
 $ cargo run
 ...
