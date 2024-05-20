@@ -57,9 +57,17 @@ You need to have [`pylode`][pyLODE]
 and [`rdf-convert` (from the _rdftools_ tool set][rdftools]
 installed and available on your [`PATH`][PATH].
 
+### Install
+
+As for now, you have two choices:
+
+1. [Compile it](#how-to-compile) yourself
+1. Download a Linux x86\_64 statically linked binary from
+   [the latest release](https://github.com/hoijui/ontprox/releases/latest)
+
 ### Run
 
-(see [Prerequisites](#prerequisites) first)
+(see [Install](#install) and [Prerequisites](#prerequisites) first)
 
 ```shell
 $ cargo run
@@ -112,14 +120,6 @@ cargo build
 
 If all goes well,
 the executable can be found at `target/debug/ontprox`.
-
-## Get the tool
-
-As for now, you have two choices:
-
-1. [Compile it](#how-to-compile) yourself
-1. Download a Linux x86\_64 statically linked binary from
-   [the releases page](https://github.com/hoijui/ontprox/releases)
 
 [RDFlib]: https://rdflib.readthedocs.io
 [pyLODE]: https://github.com/RDFLib/pyLODE
