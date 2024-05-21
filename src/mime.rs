@@ -202,97 +202,10 @@ const FEXT_TURTLE_STAR: &str = "ttls";
 const FEXT_YAML_LD: &str = "yamlld";
 const FEXT_YAML_LD_2: &str = "ymlld";
 
-// pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<MediaType<'static>, Type>> = Lazy::new(|| {
-//     let mut map = HashMap::new();
-//     map.insert(MEDIA_TYPE_BINARY_RDF, Type::BinaryRdf);
-//         // (MEDIA_TYPE_CSVW, Type::Csvw),
-//         // // (MEDIA_TYPE_HDT, Type::), // NOTE Does not have its own media type
-//         // (MEDIA_TYPE_HTML, Type::Html),
-//         // (MEDIA_TYPE_HTML_2, Type::Html),
-//         // (MEDIA_TYPE_JSON_LD, Type::JsonLd),
-//         // (MEDIA_TYPE_JSON_LD_2, Type::JsonLd),
-//         // (MEDIA_TYPE_MICRODATA, Type::Microdata),
-//         // (MEDIA_TYPE_MICRODATA_2, Type::Microdata),
-//         // (MEDIA_TYPE_N3, Type::N3),
-//         // (MEDIA_TYPE_N3_2, Type::N3),
-//         // (MEDIA_TYPE_ND_JSON_LD, Type::NdJsonLd),
-//         // (MEDIA_TYPE_N_QUADS, Type::NQuads),
-//         // (MEDIA_TYPE_N_QUADS_2, Type::NQuads),
-//         // (MEDIA_TYPE_N_QUADS_3, Type::NQuads),
-//         // (MEDIA_TYPE_N_QUADS_STAR, Type::NQuadsStar),
-//         // (MEDIA_TYPE_N_TRIPLES, Type::NTriples),
-//         // (MEDIA_TYPE_N_TRIPLES_STAR, Type::NTriplesStar),
-//         // (MEDIA_TYPE_RDF_A, Type::RdfA),
-//         // (MEDIA_TYPE_RDF_A_2, Type::RdfA),
-//         // (MEDIA_TYPE_RDF_JSON, Type::RdfJson),
-//         // (MEDIA_TYPE_RDF_XML, Type::RdfXml),
-//         // (MEDIA_TYPE_RDF_XML_2, Type::RdfXml),
-//         // (MEDIA_TYPE_RDF_XML_3, Type::RdfXml),
-//         // (MEDIA_TYPE_TRIG, Type::TriG),
-//         // (MEDIA_TYPE_TRIG_2, Type::TriG),
-//         // (MEDIA_TYPE_TRIG_STAR, Type::TriGStar),
-//         // (MEDIA_TYPE_TRIX, Type::TriX),
-//         // (MEDIA_TYPE_TSVW, Type::Tsvw),
-//         // (MEDIA_TYPE_TURTLE, Type::Turtle),
-//         // (MEDIA_TYPE_TURTLE_2, Type::Turtle),
-//         // (MEDIA_TYPE_TURTLE_STAR, Type::TurtleStar),
-//         // (MEDIA_TYPE_TURTLE_STAR_2, Type::TurtleStar),
-//         // (MEDIA_TYPE_YAML_LD, Type::YamlLd),
-//         // ].into_iter().collect()
-//         map
-// });
-
-// pub fn media_type2type<'a>(media_type: &'a MediaType<'a>) -> Option<Type> {
-//     MEDIA_TYPE_2_MIME.get(media_type).copied()
-// }
-
-// pub fn media_type2type_2nd<'a>(map: &HashMap<MediaType<'static>, Type>, media_type: &'a MediaType<'a>) -> Option<Type> {
-//     map.get(media_type).copied()
-// }
-
 pub fn media_type2type(media_type: &MediaType) -> Option<Type> {
     let search_hash = hasher::hash_num(media_type);
     MEDIA_TYPE_2_MIME.get(&search_hash).copied()
 }
-
-// pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<MediaType<'static>, Type>> = Lazy::new(|| {
-//     vec![
-//         (MEDIA_TYPE_BINARY_RDF, Type::BinaryRdf),
-//         (MEDIA_TYPE_CSVW, Type::Csvw),
-//         // (MEDIA_TYPE_HDT, Type::), // NOTE Does not have its own media type
-//         (MEDIA_TYPE_HTML, Type::Html),
-//         (MEDIA_TYPE_HTML_2, Type::Html),
-//         (MEDIA_TYPE_JSON_LD, Type::JsonLd),
-//         (MEDIA_TYPE_JSON_LD_2, Type::JsonLd),
-//         (MEDIA_TYPE_MICRODATA, Type::Microdata),
-//         (MEDIA_TYPE_MICRODATA_2, Type::Microdata),
-//         (MEDIA_TYPE_N3, Type::N3),
-//         (MEDIA_TYPE_N3_2, Type::N3),
-//         (MEDIA_TYPE_ND_JSON_LD, Type::NdJsonLd),
-//         (MEDIA_TYPE_N_QUADS, Type::NQuads),
-//         (MEDIA_TYPE_N_QUADS_2, Type::NQuads),
-//         (MEDIA_TYPE_N_QUADS_3, Type::NQuads),
-//         (MEDIA_TYPE_N_QUADS_STAR, Type::NQuadsStar),
-//         (MEDIA_TYPE_N_TRIPLES, Type::NTriples),
-//         (MEDIA_TYPE_N_TRIPLES_STAR, Type::NTriplesStar),
-//         (MEDIA_TYPE_RDF_A, Type::RdfA),
-//         (MEDIA_TYPE_RDF_A_2, Type::RdfA),
-//         (MEDIA_TYPE_RDF_JSON, Type::RdfJson),
-//         (MEDIA_TYPE_RDF_XML, Type::RdfXml),
-//         (MEDIA_TYPE_RDF_XML_2, Type::RdfXml),
-//         (MEDIA_TYPE_RDF_XML_3, Type::RdfXml),
-//         (MEDIA_TYPE_TRIG, Type::TriG),
-//         (MEDIA_TYPE_TRIG_2, Type::TriG),
-//         (MEDIA_TYPE_TRIG_STAR, Type::TriGStar),
-//         (MEDIA_TYPE_TRIX, Type::TriX),
-//         (MEDIA_TYPE_TSVW, Type::Tsvw),
-//         (MEDIA_TYPE_TURTLE, Type::Turtle),
-//         (MEDIA_TYPE_TURTLE_2, Type::Turtle),
-//         (MEDIA_TYPE_TURTLE_STAR, Type::TurtleStar),
-//         (MEDIA_TYPE_TURTLE_STAR_2, Type::TurtleStar),
-//         (MEDIA_TYPE_YAML_LD, Type::YamlLd),
-//         ].into_iter().collect()
-// });
 
 pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<u64, Type>> = Lazy::new(|| {
     vec![
@@ -337,56 +250,6 @@ pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<u64, Type>> = Lazy::new(|| {
     .collect()
 });
 
-// static COUNTRIES: phf::Map<MediaType, Type> = phf_map! {
-//     MEDIA_TYPE_BINARY_RDF => Type::BinaryRdf,
-//     MEDIA_TYPE_CSVW => Type::Csvw,
-//     //MEDIA_TYPE_HDT => Type::, // NOTE Does not have its own media type
-//     MEDIA_TYPE_HTML => Type::Html,
-//     MEDIA_TYPE_HTML_2 => Type::Html,
-//     MEDIA_TYPE_JSON_LD => Type::JsonLd,
-//     MEDIA_TYPE_JSON_LD_2 => Type::JsonLd,
-//     MEDIA_TYPE_MICRODATA => Type::Microdata,
-//     MEDIA_TYPE_MICRODATA_2 => Type::Microdata,
-//     MEDIA_TYPE_N3 => Type::N3,
-//     MEDIA_TYPE_N3_2 => Type::N3,
-//     MEDIA_TYPE_ND_JSON_LD => Type::NdJsonLd,
-//     MEDIA_TYPE_N_QUADS => Type::NQuads,
-//     MEDIA_TYPE_N_QUADS_2 => Type::NQuads,
-//     MEDIA_TYPE_N_QUADS_3 => Type::NQuads,
-//     MEDIA_TYPE_N_QUADS_STAR => Type::NQuadsStar,
-//     MEDIA_TYPE_N_TRIPLES => Type::NTriples,
-//     MEDIA_TYPE_N_TRIPLES_STAR => Type::NTriplesStar,
-//     MEDIA_TYPE_RDF_A => Type::RdfA,
-//     MEDIA_TYPE_RDF_A_2 => Type::RdfA,
-//     MEDIA_TYPE_RDF_JSON => Type::RdfJson,
-//     MEDIA_TYPE_RDF_XML => Type::RdfXml,
-//     MEDIA_TYPE_RDF_XML_2 => Type::RdfXml,
-//     MEDIA_TYPE_RDF_XML_3 => Type::RdfXml,
-//     MEDIA_TYPE_TRIG => Type::TriG,
-//     MEDIA_TYPE_TRIG_2 => Type::TriG,
-//     MEDIA_TYPE_TRIG_STAR => Type::TriGStar,
-//     MEDIA_TYPE_TRIX => Type::TriX,
-//     MEDIA_TYPE_TSVW => Type::Tsvw,
-//     MEDIA_TYPE_TURTLE => Type::Turtle,
-//     MEDIA_TYPE_TURTLE_2 => Type::Turtle,
-//     MEDIA_TYPE_TURTLE_STAR => Type::TurtleStar,
-//     MEDIA_TYPE_TURTLE_STAR_2 => Type::TurtleStar,
-//     MEDIA_TYPE_YAML_LD => Type::YamlLd,
-// };
-
-// Ok(match media_type {
-//     MEDIA_TYPE_HTML | MEDIA_TYPE_HTML_2 => Self::Html,
-//     MEDIA_TYPE_JSON_LD | MEDIA_TYPE_JSON_LD_2 => Self::JsonLd,
-//     MEDIA_TYPE_N3 | MEDIA_TYPE_N3_2 => Self::N3,
-//     MEDIA_TYPE_N_QUADS => Self::NQuads,
-//     MEDIA_TYPE_N_TRIPLES => Self::NTriples,
-//     MEDIA_TYPE_RDF_JSON => Self::RdfJson,
-//     MEDIA_TYPE_RDF_XML => Self::RdfXml,
-//     MEDIA_TYPE_TRIG => Self::TriG,
-//     MEDIA_TYPE_TRIX => Self::TriX,
-//     MEDIA_TYPE_TURTLE => Self::Turtle,
-//     _ => return Err(ParseError::UnrecognizedContentType(media_type.t
-
 /**
  * The different mime-types of RDF Ontologies.
  */
@@ -418,8 +281,6 @@ pub enum Type {
     YamlLd,
 }
 
-// AddType application/rdf+xml     .rdf      .owl
-
 impl FromStr for Type {
     type Err = ParseError;
 
@@ -427,15 +288,6 @@ impl FromStr for Type {
         Self::from_mime_type(s)
     }
 }
-
-// impl Deserialize for Types {
-//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: serde::Deserializer<'de> {
-//         let s = String::deserialize(deserializer)?;
-//         Self::from_mime_type(s).map_err(serde::de::Error::custom)
-//     }
-// }
 
 impl Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
