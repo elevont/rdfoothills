@@ -508,11 +508,11 @@ impl Type {
     #[must_use]
     pub const fn standard_definition_url(self) -> &'static str {
         match self {
-            Self::BinaryRdf => "BinaryRDF", // TODO
+            Self::BinaryRdf => todo!(), // TODO
             Self::Csvw => "https://w3c.github.io/csvw/syntax/",
             Self::Hdt => "https://www.rdfhdt.org/",
             Self::HexTuples => "https://github.com/ontola/hextuples",
-            Self::Html => "HTML", // TODO
+            Self::Html => todo!(), // TODO
             Self::JsonLd => "http://www.w3.org/ns/formats/JSON-LD",
             Self::Microdata => "https://www.w3.org/wiki/Mapping_Microdata_to_RDF",
             Self::N3 => "http://www.w3.org/ns/formats/N3",
@@ -530,7 +530,7 @@ impl Type {
             Self::RdfXml => "http://www.w3.org/ns/formats/RDF_XML",
             Self::TriG => "http://www.w3.org/ns/formats/TriG",
             Self::TriGStar => "https://w3c.github.io/rdf-star/cg-spec/editors_draft.html#trig-star",
-            Self::TriX => "TriX", // TODO
+            Self::TriX => todo!(), // TODO
             Self::Tsvw => "https://w3c.github.io/csvw/syntax/",
             Self::Turtle => "http://www.w3.org/ns/formats/Turtle",
             Self::TurtleStar => {
