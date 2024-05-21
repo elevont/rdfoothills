@@ -347,7 +347,6 @@ impl Type {
     /// Will return `ParseError::CouldBeAny` if the type is generic, and thus could be any (or none) of the known RDF types.
     /// Will return `ParseError::UnrecognizedContentType` if the type is a known RDF type.
     pub fn from_media_type(media_type: &MediaType) -> Result<Self, ParseError> {
-        // let value_opt = media_type2type(media_type);
         if media_type.essence() == MEDIA_TYPE_TEXT_PLAIN {
             return Err(ParseError::CouldBeAny(media_type.to_string()));
         }
