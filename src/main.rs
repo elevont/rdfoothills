@@ -187,6 +187,7 @@ async fn handler_rdf(
             };
             if !ont_cache_files_found.is_empty() {
                 let annotated_ont_cache_file_found = annotate_ont_files(ont_cache_files_found)
+                    .await
                     .map_err(|err| format!("Failed to parse MIME types from cache files - '{err}'"))
                     .unwrap();
                 let machine_readable_cached_ont_files: Vec<_> = annotated_ont_cache_file_found

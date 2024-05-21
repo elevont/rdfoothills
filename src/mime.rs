@@ -32,11 +32,17 @@ pub enum ParseError {
     #[error("Unrecognized ontology file extension: '{0}'")]
     UnrecognizedFileExtension(String),
 
-    #[error("File has no extension: '{0}'")]
+    #[error("File '{0}' has no extension")]
     NoFileExtension(PathBuf),
 
-    #[error("Unrecognized ontology file content")]
-    UnrecognizedContent,
+    #[error("File '{0}' has no (known) extension, and we faield to read it - '{1}'")]
+    NoKnownFileExtensionAndReadError(PathBuf, String),
+
+    #[error("File content is identified as {0}, which is not recognized as an ontology file type")]
+    UnrecognizedContent(String),
+
+    #[error("File content is not recognized at all")]
+    UnidentifiedContent,
 }
 
 const MIME_TYPE_BINARY_RDF: &str = "application/x-binary-rdf";
@@ -364,17 +370,25 @@ impl Type {
         })
     }
 
-    pub fn from_path(file: &StdPath) -> Result<Self, ParseError> {
-        file.extension()
+    pub async fn from_path(file: &StdPath) -> Result<Self, ParseError> {
+        let type_from_extension_opt = file
+            .extension()
             .map(OsStr::to_string_lossy)
-            .map(|fext| Self::from_file_ext(fext.as_ref()))
-            .ok_or_else(|| ParseError::NoFileExtension(file.to_owned()))?
+            .map(|fext| Self::from_file_ext(fext.as_ref()));
+        if let Some(Ok(type_from_extension)) = type_from_extension_opt {
+            Ok(type_from_extension)
+        } else {
+            let content = tokio::fs::read(file).await.map_err(|err| {
+                ParseError::NoKnownFileExtensionAndReadError(file.to_owned(), err.to_string())
+            })?;
+            Self::from_content(&content)
+        }
     }
 
     pub fn from_content(content: &[u8]) -> Result<Self, ParseError> {
-        let infer_typ = infer::get(content).ok_or(ParseError::UnrecognizedContent)?;
+        let infer_typ = infer::get(content).ok_or(ParseError::UnidentifiedContent)?;
         let media_typ = MediaType::parse(infer_typ.mime_type())
-            .map_err(|_err| ParseError::UnrecognizedContent)?;
+            .map_err(|_err| ParseError::UnrecognizedContent(infer_typ.mime_type().to_owned()))?;
         Self::from_media_type(&media_typ)
     }
 

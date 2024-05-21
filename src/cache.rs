@@ -10,6 +10,8 @@ use axum::{
     body::Body,
     http::{header::CONTENT_TYPE, HeaderMap, StatusCode},
 };
+use futures::future::join_all;
+use futures::Future;
 use mediatype::MediaType;
 use reqwest::Url;
 use std::ffi::OsStr;
@@ -49,14 +51,14 @@ pub async fn search_ont_files(ont_cache_dir: &StdPath, all: bool) -> io::Result<
     Ok(ont_files)
 }
 
-pub fn annotate_ont_files(ont_files: Vec<PathBuf>) -> Result<Vec<OntFile>, mime::ParseError> {
-    ont_files
-        .into_iter()
-        .map(|file| {
-            let mime_type = mime::Type::from_path(&file)?;
-            Ok::<OntFile, mime::ParseError>(OntFile { file, mime_type })
-        })
-        .collect::<Result<Vec<_>, _>>()
+pub async fn annotate_ont_files(ont_files: Vec<PathBuf>) -> Result<Vec<OntFile>, mime::ParseError> {
+    join_all(ont_files.into_iter().map(|file| async {
+        let mime_type = mime::Type::from_path(&file).await?;
+        Ok::<OntFile, mime::ParseError>(OntFile { file, mime_type })
+    }))
+    .await
+    .into_iter()
+    .collect::<Result<Vec<_>, _>>()
 }
 
 pub async fn look_for_ont_file(
