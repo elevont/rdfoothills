@@ -236,6 +236,8 @@ pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
         | mime::Type::RdfA
         | mime::Type::RdfJson
         | mime::Type::TriGStar
+        | mime::Type::OwlFunctional
+        | mime::Type::OwlXml
         | mime::Type::Tsvw
         | mime::Type::TurtleStar
         | mime::Type::YamlLd => None,

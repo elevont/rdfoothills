@@ -55,8 +55,8 @@ const MIME_TYPE_N_QUADS: &str = "application/n-quads";
 const MIME_TYPE_N_QUADS_STAR: &str = "application/n-quadsstar"; // TODO This is a pure guess so far
 const MIME_TYPE_N_TRIPLES: &str = "application/n-triples";
 const MIME_TYPE_N_TRIPLES_STAR: &str = "application/n-triplesstar"; // TODO This is a pure guess so far
-const MIME_TYPE_OWL_XML: &str = "application/owl+xml"; // .owx
-const MIME_TYPE_OWL_FUNCTIONAL: &str = "text/owl-functional"; // .ofn
+const MIME_TYPE_OWL_FUNCTIONAL: &str = "text/owl-functional";
+const MIME_TYPE_OWL_XML: &str = "application/owl+xml";
 const MIME_TYPE_RDF_A: &str = "text/html";
 const MIME_TYPE_RDF_JSON: &str = "application/rdf+json";
 const MIME_TYPE_RDF_XML: &str = "application/rdf+xml";
@@ -116,6 +116,18 @@ const MEDIA_TYPE_N_QUADS_STAR: MediaType =
 const MEDIA_TYPE_N_TRIPLES: MediaType = MediaType::new(APPLICATION, mediatype::names::N_TRIPLES);
 const MEDIA_TYPE_N_TRIPLES_STAR: MediaType =
     MediaType::new(APPLICATION, mediatype::Name::new_unchecked("n-triplesstar")); // TODO This is a pure guess so far
+const MEDIA_TYPE_OWL_FUNCTIONAL: MediaType = MediaType::from_parts(
+    APPLICATION,
+    mediatype::Name::new_unchecked("owl"),
+    Some(mediatype::Name::new_unchecked("functional")),
+    &[],
+);
+const MEDIA_TYPE_OWL_XML: MediaType = MediaType::from_parts(
+    APPLICATION,
+    mediatype::Name::new_unchecked("owl"),
+    Some(mediatype::names::XML),
+    &[],
+);
 const MEDIA_TYPE_RDF_A: MediaType = MediaType::new(TEXT, mediatype::names::HTML);
 // const MEDIA_TYPE_RDF_A_2: MediaType = MediaType::from_parts(
 //     APPLICATION,
@@ -228,6 +240,8 @@ pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<u64, Type>> = Lazy::new(|| {
         (MEDIA_TYPE_N_QUADS_STAR, Type::NQuadsStar),
         (MEDIA_TYPE_N_TRIPLES, Type::NTriples),
         (MEDIA_TYPE_N_TRIPLES_STAR, Type::NTriplesStar),
+        (MEDIA_TYPE_OWL_FUNCTIONAL, Type::OwlFunctional),
+        (MEDIA_TYPE_OWL_XML, Type::OwlXml),
         // (MEDIA_TYPE_RDF_A, Type::RdfA),
         // (MEDIA_TYPE_RDF_A_2, Type::RdfA),
         (MEDIA_TYPE_RDF_JSON, Type::RdfJson),
@@ -269,6 +283,8 @@ pub enum Type {
     NQuadsStar,
     NTriples,
     NTriplesStar,
+    OwlFunctional,
+    OwlXml,
     RdfA,
     RdfJson,
     RdfXml,
@@ -332,6 +348,8 @@ impl Type {
             FEXT_N_QUADS_STAR => Self::NQuadsStar,
             FEXT_N_TRIPLES => Self::NTriples,
             FEXT_N_TRIPLES_STAR => Self::NTriplesStar,
+            FEXT_OWL_FUNCTIONAL => Self::OwlFunctional,
+            FEXT_OWL_XML => Self::OwlXml,
             // FEXT_RDF_A | FEXT_RDF_A_2 | FEXT_RDF_A_3 => Self::RdfA,
             FEXT_RDF_JSON => Self::RdfJson,
             FEXT_RDF_XML | FEXT_RDF_XML_2 | FEXT_RDF_XML_3 | FEXT_RDF_XML_4 => Self::RdfXml,
@@ -376,6 +394,8 @@ impl Type {
             Self::NQuadsStar => MIME_TYPE_N_QUADS_STAR,
             Self::NTriples => MIME_TYPE_N_TRIPLES,
             Self::NTriplesStar => MIME_TYPE_N_TRIPLES_STAR,
+            Self::OwlFunctional => MIME_TYPE_OWL_FUNCTIONAL,
+            Self::OwlXml => MIME_TYPE_OWL_XML,
             Self::RdfA => MIME_TYPE_RDF_A,
             Self::RdfJson => MIME_TYPE_RDF_JSON,
             Self::RdfXml => MIME_TYPE_RDF_XML,
@@ -405,6 +425,8 @@ impl Type {
             Self::NQuadsStar => MEDIA_TYPE_N_QUADS_STAR,
             Self::NTriples => MEDIA_TYPE_N_TRIPLES,
             Self::NTriplesStar => MEDIA_TYPE_N_TRIPLES_STAR,
+            Self::OwlFunctional => MEDIA_TYPE_OWL_FUNCTIONAL,
+            Self::OwlXml => MEDIA_TYPE_OWL_XML,
             Self::RdfA => MEDIA_TYPE_RDF_A,
             Self::RdfJson => MEDIA_TYPE_RDF_JSON,
             Self::RdfXml => MEDIA_TYPE_RDF_XML,
@@ -434,6 +456,8 @@ impl Type {
             Self::NQuadsStar => FEXT_N_QUADS_STAR,
             Self::NTriples => FEXT_N_TRIPLES,
             Self::NTriplesStar => FEXT_N_TRIPLES_STAR,
+            Self::OwlFunctional => FEXT_OWL_FUNCTIONAL,
+            Self::OwlXml => FEXT_OWL_XML,
             Self::RdfA => FEXT_RDF_A,
             Self::RdfJson => FEXT_RDF_JSON,
             Self::RdfXml => FEXT_RDF_XML,
@@ -463,6 +487,8 @@ impl Type {
             Self::NQuadsStar => "N-Quads-star",
             Self::NTriples => "N-Triples",
             Self::NTriplesStar => "N-Triples-star",
+            Self::OwlFunctional => "OWL-Functional",
+            Self::OwlXml => "OWL/XML",
             Self::RdfA => "RDFa",
             Self::RdfJson => "RDF/JSON",
             Self::RdfXml => "RDF/XML",
@@ -492,6 +518,8 @@ impl Type {
             | Self::NQuadsStar
             | Self::NTriples
             | Self::NTriplesStar
+            | Self::OwlFunctional
+            | Self::OwlXml
             | Self::RdfA
             | Self::RdfJson
             | Self::RdfXml
@@ -525,6 +553,8 @@ impl Type {
             Self::NTriplesStar => {
                 "https://w3c.github.io/rdf-star/cg-spec/editors_draft.html#n-triples-star"
             }
+            Self::OwlFunctional => todo!(), // TODO
+            Self::OwlXml => todo!(), // TODO
             Self::RdfA => "https://www.w3.org/2001/sw/wiki/RDFa",
             Self::RdfJson => "http://www.w3.org/ns/formats/RDF_JSON",
             Self::RdfXml => "http://www.w3.org/ns/formats/RDF_XML",
@@ -557,6 +587,8 @@ impl Type {
             | Self::NQuads
             | Self::NQuadsStar
             | Self::NTriples
+            | Self::OwlFunctional
+            | Self::OwlXml
             | Self::RdfA
             | Self::RdfJson
             | Self::RdfXml
