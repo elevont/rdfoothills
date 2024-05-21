@@ -270,9 +270,7 @@ pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<u64, Type>> = Lazy::new(|| {
     .collect()
 });
 
-/**
- * The different mime-types of RDF Ontologies.
- */
+/// The different mime-types of RDF serialization formats.
 #[derive(Copy, Clone, Debug, Default, /*DeserializeFromStr,*/ PartialEq, Eq, Hash)]
 pub enum Type {
     BinaryRdf,
@@ -323,6 +321,15 @@ impl Type {
         vec![Self::Html, Self::JsonLd, Self::RdfXml, Self::Turtle]
     }
 
+    /// Tries to parse a MIME type of the form `"<type>/<subtype>"`,
+    /// for example `"text/turtle"`,
+    /// as a known RDF serialization format type.
+    ///
+    /// # Errors
+    ///
+    /// Will return `ParseError::InvalidFormat` if the given string does not have the format of a MIME type.
+    /// Will return `ParseError::CouldBeAny` if the type is generic, and thus could be any (or none) of the known RDF types.
+    /// Will return `ParseError::UnrecognizedContentType` if the type is a known RDF type.
     pub fn from_mime_type<'a, T>(mime_type: T) -> Result<Self, ParseError>
     where
         T: Into<Cow<'a, str>>,
@@ -332,6 +339,13 @@ impl Type {
         Self::from_media_type(&media_type)
     }
 
+    /// Tries to identify the MIME type from the given type from the [mediatype](
+    /// https://crates.io/crates/mediatype) crate.
+    ///
+    /// # Errors
+    ///
+    /// Will return `ParseError::CouldBeAny` if the type is generic, and thus could be any (or none) of the known RDF types.
+    /// Will return `ParseError::UnrecognizedContentType` if the type is a known RDF type.
     pub fn from_media_type(media_type: &MediaType) -> Result<Self, ParseError> {
         // let value_opt = media_type2type(media_type);
         if media_type.essence() == MEDIA_TYPE_TEXT_PLAIN {
@@ -341,6 +355,11 @@ impl Type {
             .ok_or_else(|| ParseError::UnrecognizedContentType(media_type.to_string()))
     }
 
+    /// Tries to identify the MIME type from the given file extension.
+    ///
+    /// # Errors
+    ///
+    /// Will return `ParseError::UnrecognizedFileExtension` if the extension is not supported.
     pub fn from_file_ext(file_ext: &str) -> Result<Self, ParseError> {
         Ok(match file_ext.to_lowercase().as_str() {
             FEXT_BINARY_RDF => Self::BinaryRdf,
@@ -370,6 +389,15 @@ impl Type {
         })
     }
 
+    /// Tries to identify the MIME type first from the extension,
+    /// and then from the content of the file.
+    ///
+    /// # Errors
+    ///
+    /// Will return `ParseError::NoKnownFileExtensionAndReadError` if the file has no extension adn we failed to read the file.
+    /// Will return `ParseError::UnrecognizedFileExtension` if the extension is not supported.
+    /// Will return `ParseError::UnidentifiedContent` if the content is not recognized.
+    /// Will return `ParseError::UnrecognizedContent` if the content is recognized but not supported.
     pub async fn from_path(file: &StdPath) -> Result<Self, ParseError> {
         let type_from_extension_opt = file
             .extension()
@@ -385,6 +413,12 @@ impl Type {
         }
     }
 
+    /// Detect the MIME type from the content of a file.
+    ///
+    /// # Errors
+    ///
+    /// Will return `ParseError::UnidentifiedContent` if the content is not recognized.
+    /// Will return `ParseError::UnrecognizedContent` if the content is recognized but not supported.
     pub fn from_content(content: &[u8]) -> Result<Self, ParseError> {
         let infer_typ = infer::get(content).ok_or(ParseError::UnidentifiedContent)?;
         let media_typ = MediaType::parse(infer_typ.mime_type())
@@ -392,6 +426,7 @@ impl Type {
         Self::from_media_type(&media_typ)
     }
 
+    /// The MIME type as a string.
     #[must_use]
     pub const fn mime_type(self) -> &'static str {
         match self {
@@ -423,6 +458,8 @@ impl Type {
         }
     }
 
+    /// Returns the respective type from the [mediatype](
+    /// https://crates.io/crates/mediatype) crate.
     #[must_use]
     pub const fn media_type(self) -> MediaType<'static> {
         match self {
@@ -454,6 +491,8 @@ impl Type {
         }
     }
 
+    /// Returns the most common file extension for this MIME type,
+    /// for example `.ttl` for `text/turtle`.
     #[must_use]
     pub const fn file_ext(self) -> &'static str {
         match self {
@@ -485,6 +524,7 @@ impl Type {
         }
     }
 
+    /// Returns the human oriented name of the format.
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
@@ -516,6 +556,8 @@ impl Type {
         }
     }
 
+    /// Returns whether the MIME type is machine-readable,
+    /// vs only human-oriented.
     #[must_use]
     pub const fn is_machine_readable(self) -> bool {
         match self {
@@ -547,6 +589,7 @@ impl Type {
         }
     }
 
+    /// Returns the URL of the definition of the MIME types serialization format.
     #[must_use]
     pub const fn standard_definition_url(self) -> &'static str {
         match self {
@@ -586,6 +629,7 @@ impl Type {
         }
     }
 
+    /// Whether the RDF MIME type supports RDF-Star content/syntax.
     #[must_use]
     pub const fn star(self) -> bool {
         match self {
@@ -614,6 +658,7 @@ impl Type {
         }
     }
 
+    /// Whether the RDF MIME type is the default one.
     #[must_use]
     pub fn is_default(self) -> bool {
         self == Self::default()
