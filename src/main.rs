@@ -12,7 +12,7 @@ mod mime;
 mod ont_request;
 mod util;
 
-use crate::conversion::try_convert;
+use crate::conversion::convert;
 use crate::ont_request::DlOrConv;
 use crate::ont_request::OntRequest;
 use axum::extract::State;
@@ -107,9 +107,7 @@ async fn handler_rdf(
             return Ok(respond_with_body(
                 &ont_file_required,
                 ont_request.mime_type,
-                body_from_file(&ont_file_required)
-                    .await
-                    .map_err(IntoResponse::into_response)?,
+                body_from_file(&ont_file_required).await?,
             ));
         }
     }
@@ -136,9 +134,9 @@ async fn handler_rdf(
                 for mr_ont_cache_file in machine_readable_cached_ont_files {
                     // let mtype = mr_ont_cache_file.mime_type;
                     let conversion_res =
-                        try_convert(&ont_request, &ont_cache_dir, mr_ont_cache_file).await;
+                        convert(&ont_request, &ont_cache_dir, mr_ont_cache_file).await;
                     if let Ok(converted) = conversion_res {
-                        return Ok(converted);
+                        return body_response(&converted).await;
                     }
                 }
             }
@@ -147,9 +145,7 @@ async fn handler_rdf(
 
     // NOTE At this point we know, that the format requested by the client is producible by convverting from any of the already cached formats (if any)
 
-    let dled_ont = dl_ont(&ont_request, &ont_cache_dir)
-        .await
-        .map_err(IntoResponse::into_response)?;
+    let dled_ont = dl_ont(&ont_request, &ont_cache_dir).await?;
 
     if dled_ont.mime_type == ont_request.mime_type {
         // This is possilbe if we just downloaded the ontology
@@ -162,13 +158,19 @@ async fn handler_rdf(
         // This is possible, if the ontology server returned a different format then the one we requested
         if dled_ont.mime_type.is_machine_readable() {
             let dled_ont_file = dled_ont.into_ont_file();
-            let conversion_res = try_convert(&ont_request, &ont_cache_dir, &dled_ont_file).await;
-            conversion_res.map_err(IntoResponse::into_response)
+            let conversion_res = convert(&ont_request, &ont_cache_dir, &dled_ont_file).await;
+            let output_ont_file = conversion_res.map_err(|err| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Failed to convert the downloaded ontology: {err}"),
+                )
+            })?;
+            body_response(&output_ont_file).await
         } else {
             Err((StatusCode::INTERNAL_SERVER_ERROR, format!(
                 "As the format returned by the server ({}) is not machine-readable, it cannot be converted into the requested format.",
                 dled_ont.mime_type
-            )).into_response())
+            )))
         }
     }
 }

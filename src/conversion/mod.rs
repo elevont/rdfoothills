@@ -2,18 +2,73 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+mod pylode;
+mod rdfconvert;
+mod rdfx;
+
 use crate::cache::OntFile;
 use crate::mime;
-use crate::respond_with_body;
 
 use crate::cache::ont_file;
 use crate::ont_request::OntRequest;
-use crate::util::body_from_file;
-use axum::{
-    body::Body,
-    http::{HeaderMap, StatusCode},
-};
-use std::path::Path as StdPath;
+use std::io;
+use std::path::Path;
+
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("The source format ({from}) format is not machine-readable, and therefore auto-conversion from it to any other format is impossible. ")]
+    NonMachineReadableSource { from: mime::Type },
+
+    #[error("None of the supported converters can convert from {from} to {to}. ")]
+    NoConverter { from: mime::Type, to: mime::Type },
+
+    #[error("Failed to run {cmd} for {task}: {from}")]
+    ExtCmdFaileToInvoke {
+        from: io::Error,
+        cmd: String,
+        task: String,
+    },
+
+    #[error("Running {cmd} for {task} returned with non-zero exit status '{exit_code}', indicating an error. stderr:\n{stderr}")]
+    ExtCmdUnsuccessfull {
+        cmd: String,
+        task: String,
+        exit_code: i32,
+        stderr: String,
+    },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Type {
+    Native,
+    Cli,
+    NetworkService,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Quality {
+    PreservesComments,
+    PreservesFormatting,
+    PreservesOrder,
+    Prefixes,
+    Base,
+    Data,
+}
+
+type Priority = u8;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Info {
+    typ: Type,
+    priority: Priority,
+    quality: Quality,
+}
+
+pub trait Converter {
+    fn info() -> Info;
+    fn supports(&self, from: mime::Type, to: mime::Type) -> bool;
+    async fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), Error>;
+}
 
 pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
     match mime_type {
@@ -48,149 +103,65 @@ pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
     }
 }
 
-pub async fn cli_cmd(cmd: &str, task: &str, args: &[&str]) -> Result<(), (StatusCode, String)> {
+pub fn to_str(path: &Path) -> &str {
+    path.as_os_str().to_str().unwrap()
+}
+
+pub async fn cli_cmd(cmd: &str, task: &str, args: &[&str]) -> Result<(), Error> {
     let output = tokio::process::Command::new(cmd)
         .args(args)
         .output()
         .await
-        .map_err(|err| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to run {cmd} for {task}: {err}"),
-            )
+        .map_err(|from| Error::ExtCmdFaileToInvoke {
+            from,
+            cmd: cmd.to_owned(),
+            task: task.to_owned(),
         })?;
     if !output.status.success() {
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Running {cmd} for {task} returned with non-zero exit status '{}', indicating an error. stderr:\n{}",
-                output.status.code().map_or("<none>".to_string(), |code| i32::to_string(&code)),
-                String::from_utf8_lossy(&output.stderr),
-        )));
+        return Err(Error::ExtCmdUnsuccessfull {
+            cmd: cmd.to_owned(),
+            task: task.to_owned(),
+            exit_code: output.status.code().unwrap_or(-1),
+            stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+        });
     }
 
     Ok(())
 }
 
-pub async fn pylode(args: &[&str]) -> Result<(), (StatusCode, String)> {
-    cli_cmd("pylode", "RDF to HTML conversion", args).await
-}
-
-pub async fn rdf_tools(args: &[&str]) -> Result<(), (StatusCode, String)> {
-    cli_cmd(
-        "rdf-convert",
-        "RDF format conversion (from/with pkg: 'rdftools')",
-        args,
-    )
-    .await
-}
-
-pub async fn rdfx(args: &[&str]) -> Result<(), (StatusCode, String)> {
-    cli_cmd("rdfx", "RDF format conversion", args).await
-}
-
-pub async fn to_html_conversion(
-    _cached_type: mime::Type,
-    _requested_type: mime::Type,
-    cached_file: &StdPath,
-    requested_file: &StdPath,
-) -> Result<(), (StatusCode, String)> {
-    pylode(&[
-        "--sort",
-        "--css",
-        "true",
-        "--profile",
-        "ontpub",
-        "--outputfile",
-        requested_file.as_os_str().to_str().unwrap(),
-        cached_file.as_os_str().to_str().unwrap(),
-    ])
-    .await
-}
-
-pub async fn rdf_convert(
-    cached_type: &str,
-    requested_type: &str,
-    cached_file: &StdPath,
-    requested_file: &StdPath,
-) -> Result<(), (StatusCode, String)> {
-    let use_rdfx = false;
-    if use_rdfx {
-        rdfx(&[
-            "convert",
-            "--format",
-            requested_type,
-            "--output",
-            requested_file.as_os_str().to_str().unwrap(),
-            cached_file.as_os_str().to_str().unwrap(),
-        ])
-        .await
-    } else {
-        rdf_tools(&[
-            "--input",
-            cached_file.as_os_str().to_str().unwrap(),
-            "--output",
-            requested_file.as_os_str().to_str().unwrap(),
-            "--read",
-            cached_type,
-            "--write",
-            requested_type,
-        ])
-        .await
-    }
-}
-
-pub async fn try_convert(
+pub async fn convert(
     ont_request: &OntRequest,
-    ont_cache_dir: &StdPath,
-    cached_ont: &OntFile,
-) -> Result<(HeaderMap, Body), (StatusCode, String)> {
-    if cached_ont.mime_type.is_machine_readable() {
+    ont_cache_dir: &Path,
+    from: &OntFile,
+) -> Result<OntFile, Error> {
+    if from.mime_type.is_machine_readable() {
         let ont_requested_file = ont_file(ont_cache_dir, ont_request.mime_type);
+        let to = OntFile {
+            file: ont_requested_file,
+            mime_type: ont_request.mime_type,
+        };
+
         if ont_request.mime_type == mime::Type::Html {
-            to_html_conversion(
-                cached_ont.mime_type,
-                ont_request.mime_type,
-                &cached_ont.file,
-                &ont_requested_file,
-            )
-            .await?;
-            return Ok(respond_with_body(
-                &ont_requested_file,
-                ont_request.mime_type,
-                body_from_file(&ont_requested_file).await?,
-            ));
+            pylode::Converter.convert(from, &to).await?;
+            return Ok(to);
         }
 
         match (
-            to_rdflib_format(cached_ont.mime_type),
+            to_rdflib_format(from.mime_type),
             to_rdflib_format(ont_request.mime_type),
         ) {
             (Some(cached_rdflib_type), Some(requested_rdflib_type)) => {
-                rdf_convert(
-                    cached_rdflib_type,
-                    requested_rdflib_type,
-                    &cached_ont.file,
-                    &ont_requested_file,
-                )
-                .await?;
-                Ok(respond_with_body(
-                    &ont_requested_file,
-                    ont_request.mime_type,
-                    body_from_file(&ont_requested_file).await?,
-                ))
+                rdfconvert::Converter.convert(from, &to).await?;
+                Ok(to)
             }
-            _ => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!(
-                    "Can not convert {} to {}",
-                    cached_ont.mime_type, ont_request.mime_type
-                ),
-            )),
+            _ => Err(Error::NoConverter {
+                from: from.mime_type,
+                to: to.mime_type,
+            }),
         }
     } else {
-        Err((StatusCode::INTERNAL_SERVER_ERROR, format!(
-            "As the cached format of this ontology ({}) is not machine-readable, it cannot be converted into the requested format.",
-            cached_ont.mime_type
-        )))
+        Err(Error::NonMachineReadableSource {
+            from: from.mime_type,
+        })
     }
 }

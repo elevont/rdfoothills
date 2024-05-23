@@ -15,7 +15,7 @@ use std::path::Path as StdPath;
 use tokio_util::io::ReaderStream;
 use url::Url;
 
-use crate::mime;
+use crate::{cache::OntFile, mime};
 
 pub async fn create_dir<P: AsRef<StdPath> + Send>(dir: P) {
     create_dir_res(dir.as_ref())
@@ -64,6 +64,12 @@ pub async fn look_for_file(file_path: &StdPath) -> io::Result<bool> {
         ));
     }
     Ok(path_exists)
+}
+
+pub async fn body_response(ont_file: &OntFile) -> Result<(HeaderMap, Body), (StatusCode, String)> {
+    let body = body_from_file(&ont_file.file).await?;
+
+    Ok(respond_with_body(&ont_file.file, ont_file.mime_type, body))
 }
 
 pub fn respond_with_body(file: &StdPath, mime_type: mime::Type, body: Body) -> (HeaderMap, Body) {
