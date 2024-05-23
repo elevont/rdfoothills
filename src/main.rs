@@ -5,26 +5,21 @@
 mod cache;
 mod cli;
 mod constants;
+mod convert;
 mod hasher;
 mod logger;
 mod mime;
 mod ont_request;
 mod util;
 
+use crate::convert::try_convert;
 use crate::ont_request::DlOrConv;
 use crate::ont_request::OntRequest;
 use axum::extract::State;
-use axum::{
-    body::Body,
-    http::{HeaderMap, StatusCode},
-    response::IntoResponse,
-    routing::get,
-    Router,
-};
+use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
 use cache::*;
 use cli_utils::BoxResult;
 use std::net::SocketAddr;
-use std::path::Path as StdPath;
 use std::path::PathBuf;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::filter::LevelFilter;
@@ -92,62 +87,6 @@ async fn serve(app: Router, addr: SocketAddr) {
     axum::serve(listener, app.layer(TraceLayer::new_for_http()))
         .await
         .unwrap();
-}
-
-async fn try_convert(
-    ont_request: &OntRequest,
-    ont_cache_dir: &StdPath,
-    cached_ont: &OntFile,
-) -> Result<(HeaderMap, Body), (StatusCode, String)> {
-    if cached_ont.mime_type.is_machine_readable() {
-        let ont_requested_file = ont_file(ont_cache_dir, ont_request.mime_type);
-        if ont_request.mime_type == mime::Type::Html {
-            to_html_conversion(
-                cached_ont.mime_type,
-                ont_request.mime_type,
-                &cached_ont.file,
-                &ont_requested_file,
-            )
-            .await?;
-            return Ok(respond_with_body(
-                &ont_requested_file,
-                ont_request.mime_type,
-                body_from_file(&ont_requested_file).await?,
-            ));
-        }
-
-        match (
-            to_rdflib_format(cached_ont.mime_type),
-            to_rdflib_format(ont_request.mime_type),
-        ) {
-            (Some(cached_rdflib_type), Some(requested_rdflib_type)) => {
-                rdf_convert(
-                    cached_rdflib_type,
-                    requested_rdflib_type,
-                    &cached_ont.file,
-                    &ont_requested_file,
-                )
-                .await?;
-                Ok(respond_with_body(
-                    &ont_requested_file,
-                    ont_request.mime_type,
-                    body_from_file(&ont_requested_file).await?,
-                ))
-            }
-            _ => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!(
-                    "Can not convert {} to {}",
-                    cached_ont.mime_type, ont_request.mime_type
-                ),
-            )),
-        }
-    } else {
-        Err((StatusCode::INTERNAL_SERVER_ERROR, format!(
-            "As the cached format of this ontology ({}) is not machine-readable, it cannot be converted into the requested format.",
-            cached_ont.mime_type
-        )))
-    }
 }
 
 async fn handler_rdf(

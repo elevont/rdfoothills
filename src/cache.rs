@@ -6,12 +6,8 @@ use crate::hasher;
 use crate::mime;
 use crate::ont_request::OntRequest;
 use crate::util::*;
-use axum::{
-    body::Body,
-    http::{header::CONTENT_TYPE, HeaderMap, StatusCode},
-};
+use axum::http::{header::CONTENT_TYPE, StatusCode};
 use futures::future::join_all;
-use futures::Future;
 use mediatype::MediaType;
 use reqwest::Url;
 use std::ffi::OsStr;
@@ -180,60 +176,4 @@ pub async fn dl_ont(
         mime_type: resp_rdf_mime_type,
         content: rdf_bytes.as_ref().to_owned(),
     })
-}
-
-pub async fn try_convert(
-    ont_request: &OntRequest,
-    ont_cache_dir: &StdPath,
-    cached_ont: &OntFile,
-) -> Result<(HeaderMap, Body), (StatusCode, String)> {
-    if cached_ont.mime_type.is_machine_readable() {
-        let ont_requested_file = ont_file(ont_cache_dir, ont_request.mime_type);
-        if ont_request.mime_type == mime::Type::Html {
-            to_html_conversion(
-                cached_ont.mime_type,
-                ont_request.mime_type,
-                &cached_ont.file,
-                &ont_requested_file,
-            )
-            .await?;
-            return Ok(respond_with_body(
-                &ont_requested_file,
-                ont_request.mime_type,
-                body_from_file(&ont_requested_file).await?,
-            ));
-        }
-
-        match (
-            to_rdflib_format(cached_ont.mime_type),
-            to_rdflib_format(ont_request.mime_type),
-        ) {
-            (Some(cached_rdflib_type), Some(requested_rdflib_type)) => {
-                rdf_convert(
-                    cached_rdflib_type,
-                    requested_rdflib_type,
-                    &cached_ont.file,
-                    &ont_requested_file,
-                )
-                .await?;
-                Ok(respond_with_body(
-                    &ont_requested_file,
-                    ont_request.mime_type,
-                    body_from_file(&ont_requested_file).await?,
-                ))
-            }
-            _ => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!(
-                    "Can not convert {} to {}",
-                    cached_ont.mime_type, ont_request.mime_type
-                ),
-            )),
-        }
-    } else {
-        Err((StatusCode::INTERNAL_SERVER_ERROR, format!(
-            "As the cached format of this ontology ({}) is not machine-readable, it cannot be converted into the requested format.",
-            cached_ont.mime_type
-        )))
-    }
 }

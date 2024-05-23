@@ -66,97 +66,6 @@ pub async fn look_for_file(file_path: &StdPath) -> io::Result<bool> {
     Ok(path_exists)
 }
 
-pub async fn cli_cmd(cmd: &str, task: &str, args: &[&str]) -> Result<(), (StatusCode, String)> {
-    let output = tokio::process::Command::new(cmd)
-        .args(args)
-        .output()
-        .await
-        .map_err(|err| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to run {cmd} for {task}: {err}"),
-            )
-        })?;
-    if !output.status.success() {
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Running {cmd} for {task} returned with non-zero exit status '{}', indicating an error. stderr:\n{}",
-                output.status.code().map_or("<none>".to_string(), |code| i32::to_string(&code)),
-                String::from_utf8_lossy(&output.stderr),
-        )));
-    }
-
-    Ok(())
-}
-
-pub async fn pylode(args: &[&str]) -> Result<(), (StatusCode, String)> {
-    cli_cmd("pylode", "RDF to HTML conversion", args).await
-}
-
-pub async fn rdf_tools(args: &[&str]) -> Result<(), (StatusCode, String)> {
-    cli_cmd(
-        "rdf-convert",
-        "RDF format conversion (from/with pkg: 'rdftools')",
-        args,
-    )
-    .await
-}
-
-pub async fn rdfx(args: &[&str]) -> Result<(), (StatusCode, String)> {
-    cli_cmd("rdfx", "RDF format conversion", args).await
-}
-
-pub async fn to_html_conversion(
-    _cached_type: mime::Type,
-    _requested_type: mime::Type,
-    cached_file: &StdPath,
-    requested_file: &StdPath,
-) -> Result<(), (StatusCode, String)> {
-    pylode(&[
-        "--sort",
-        "--css",
-        "true",
-        "--profile",
-        "ontpub",
-        "--outputfile",
-        requested_file.as_os_str().to_str().unwrap(),
-        cached_file.as_os_str().to_str().unwrap(),
-    ])
-    .await
-}
-
-pub async fn rdf_convert(
-    cached_type: &str,
-    requested_type: &str,
-    cached_file: &StdPath,
-    requested_file: &StdPath,
-) -> Result<(), (StatusCode, String)> {
-    let use_rdfx = false;
-    if use_rdfx {
-        rdfx(&[
-            "convert",
-            "--format",
-            requested_type,
-            "--output",
-            requested_file.as_os_str().to_str().unwrap(),
-            cached_file.as_os_str().to_str().unwrap(),
-        ])
-        .await
-    } else {
-        rdf_tools(&[
-            "--input",
-            cached_file.as_os_str().to_str().unwrap(),
-            "--output",
-            requested_file.as_os_str().to_str().unwrap(),
-            "--read",
-            cached_type,
-            "--write",
-            requested_type,
-        ])
-        .await
-    }
-}
-
 pub fn respond_with_body(file: &StdPath, mime_type: mime::Type, body: Body) -> (HeaderMap, Body) {
     let mut headers = HeaderMap::new();
 
@@ -221,39 +130,6 @@ pub async fn ensure_dir_exists(dir_path: &StdPath) -> io::Result<bool> {
             ?;
     }
     Ok(!dir_path_exists)
-}
-
-pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
-    match mime_type {
-        mime::Type::BinaryRdf
-        | mime::Type::Csvw
-        | mime::Type::Hdt
-        | mime::Type::Html
-        | mime::Type::Microdata
-        | mime::Type::NdJsonLd
-        | mime::Type::NQuadsStar
-        | mime::Type::NTriplesStar
-        | mime::Type::RdfA
-        | mime::Type::RdfJson
-        | mime::Type::TriGStar
-        | mime::Type::OwlFunctional
-        | mime::Type::OwlXml
-        | mime::Type::Tsvw
-        | mime::Type::TurtleStar
-        | mime::Type::YamlLd => None,
-        mime::Type::HexTuples => Some("hext"),
-        // mime::Type::Html => Some("rdfa"),
-        mime::Type::JsonLd => Some("json-ld"),
-        mime::Type::N3 => Some("n3"),
-        mime::Type::NQuads => Some("nquads"),
-        mime::Type::NTriples => Some("nt"),
-        // mime::Type::RdfA => Some("rdfa"),
-        mime::Type::TriG => Some("trig"),
-        mime::Type::RdfXml => Some("xml"),
-        // mime::Type::RdfXml => Some("pretty-xml"),
-        mime::Type::TriX => Some("trix"),
-        mime::Type::Turtle => Some("turtle"),
-    }
 }
 
 pub fn extract_file_ext(file: &StdPath) -> Option<&str> {
