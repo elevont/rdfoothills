@@ -6,6 +6,9 @@ mod pylode;
 mod rdfconvert;
 mod rdfx;
 
+use axum::async_trait;
+use once_cell::sync::Lazy;
+
 use crate::cache::OntFile;
 use crate::mime;
 
@@ -13,6 +16,16 @@ use crate::cache::ont_file;
 use crate::ont_request::OntRequest;
 use std::io;
 use std::path::Path;
+
+static CONVERTERS: Lazy<Vec<Box<dyn Converter>>> = Lazy::new(|| {
+    let mut converters: Vec<Box<dyn Converter>> = vec![
+        Box::new(rdfx::Converter),
+        Box::new(rdfconvert::Converter),
+        Box::new(pylode::Converter),
+    ];
+    converters.sort();
+    converters
+});
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -39,6 +52,23 @@ pub enum Error {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Quality {
+    PreservesComments,
+    PreservesFormatting,
+    PreservesOrder,
+    Base,
+    Prefixes,
+    Data,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Priority {
+    High,
+    Mid,
+    Low,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Type {
     Native,
     Cli,
@@ -46,28 +76,38 @@ pub enum Type {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Quality {
-    PreservesComments,
-    PreservesFormatting,
-    PreservesOrder,
-    Prefixes,
-    Base,
-    Data,
-}
-
-type Priority = u8;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Info {
-    typ: Type,
-    priority: Priority,
     quality: Quality,
+    priority: Priority,
+    typ: Type,
+    name: &'static str,
 }
 
-pub trait Converter {
-    fn info() -> Info;
+#[async_trait]
+pub trait Converter: Send + Sync {
+    fn info(&self) -> Info;
     fn supports(&self, from: mime::Type, to: mime::Type) -> bool;
     async fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), Error>;
+}
+
+impl PartialEq for dyn Converter {
+    fn eq(&self, other: &Self) -> bool {
+        self.info().eq(&other.info())
+    }
+}
+
+impl Eq for dyn Converter {}
+
+impl PartialOrd for dyn Converter {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for dyn Converter {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.info().cmp(&other.info())
+    }
 }
 
 pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
@@ -134,34 +174,30 @@ pub async fn convert(
     ont_cache_dir: &Path,
     from: &OntFile,
 ) -> Result<OntFile, Error> {
-    if from.mime_type.is_machine_readable() {
-        let ont_requested_file = ont_file(ont_cache_dir, ont_request.mime_type);
-        let to = OntFile {
-            file: ont_requested_file,
-            mime_type: ont_request.mime_type,
-        };
-
-        if ont_request.mime_type == mime::Type::Html {
-            pylode::Converter.convert(from, &to).await?;
-            return Ok(to);
-        }
-
-        match (
-            to_rdflib_format(from.mime_type),
-            to_rdflib_format(ont_request.mime_type),
-        ) {
-            (Some(cached_rdflib_type), Some(requested_rdflib_type)) => {
-                rdfconvert::Converter.convert(from, &to).await?;
-                Ok(to)
-            }
-            _ => Err(Error::NoConverter {
-                from: from.mime_type,
-                to: to.mime_type,
-            }),
-        }
-    } else {
-        Err(Error::NonMachineReadableSource {
+    if !from.mime_type.is_machine_readable() {
+        return Err(Error::NonMachineReadableSource {
             from: from.mime_type,
-        })
+        });
     }
+
+    let ont_requested_file = ont_file(ont_cache_dir, ont_request.mime_type);
+    let to = OntFile {
+        file: ont_requested_file,
+        mime_type: ont_request.mime_type,
+    };
+
+    if from.mime_type == to.mime_type {
+        return Ok(to);
+    }
+
+    for converter in CONVERTERS.iter() {
+        if converter.supports(from.mime_type, to.mime_type) {
+            return converter.convert(from, &to).await.map(|()| to);
+        }
+    }
+
+    Err(Error::NoConverter {
+        from: from.mime_type,
+        to: to.mime_type,
+    })
 }

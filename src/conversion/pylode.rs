@@ -2,9 +2,12 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+use axum::async_trait;
+
 use crate::cache::OntFile;
 use crate::mime;
 
+#[derive(Debug, Default)]
 pub struct Converter;
 
 impl Converter {
@@ -13,12 +16,14 @@ impl Converter {
     }
 }
 
+#[async_trait]
 impl super::Converter for Converter {
-    fn info() -> super::Info {
+    fn info(&self) -> super::Info {
         super::Info {
-            typ: super::Type::Cli,
-            priority: 50,
             quality: super::Quality::Data,
+            priority: super::Priority::Mid,
+            typ: super::Type::Cli,
+            name: "pyLODE",
         }
     }
 

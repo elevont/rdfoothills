@@ -2,9 +2,12 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+use axum::async_trait;
+
 use crate::cache::OntFile;
 use crate::mime;
 
+#[derive(Debug, Default)]
 pub struct Converter;
 
 impl Converter {
@@ -12,7 +15,7 @@ impl Converter {
         super::cli_cmd("rdfx", "RDF format conversion", args).await
     }
 
-    fn supports_format(fmt: mime::Type) -> bool {
+    const fn supports_format(fmt: mime::Type) -> bool {
         match fmt {
             mime::Type::N3
             | mime::Type::JsonLd
@@ -43,12 +46,14 @@ impl Converter {
     }
 }
 
+#[async_trait]
 impl super::Converter for Converter {
-    fn info() -> super::Info {
+    fn info(&self) -> super::Info {
         super::Info {
-            typ: super::Type::Cli,
-            priority: 0,
             quality: super::Quality::Data,
+            priority: super::Priority::Low,
+            typ: super::Type::Cli,
+            name: "rdfx",
         }
     }
 
