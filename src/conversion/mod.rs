@@ -6,16 +6,20 @@ mod pylode;
 mod rdfconvert;
 mod rdfx;
 
-use axum::async_trait;
+use async_trait::async_trait;
 use once_cell::sync::Lazy;
+use tokio::process;
 
-use crate::cache::OntFile;
 use crate::mime;
 
-use crate::cache::ont_file;
-use crate::ont_request::OntRequest;
+use std::ffi::OsStr;
 use std::io;
-use std::path::Path;
+use std::path::PathBuf;
+
+pub struct OntFile {
+    pub file: PathBuf,
+    pub mime_type: mime::Type,
+}
 
 static CONVERTERS: Lazy<Vec<Box<dyn Converter>>> = Lazy::new(|| {
     let mut converters: Vec<Box<dyn Converter>> = vec![
@@ -36,7 +40,7 @@ pub enum Error {
     NoConverter { from: mime::Type, to: mime::Type },
 
     #[error("Failed to run {cmd} for {task}: {from}")]
-    ExtCmdFaileToInvoke {
+    ExtCmdFailedToInvoke {
         from: io::Error,
         cmd: String,
         task: String,
@@ -110,6 +114,7 @@ impl Ord for dyn Converter {
     }
 }
 
+#[must_use]
 pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
     match mime_type {
         mime::Type::BinaryRdf
@@ -143,16 +148,28 @@ pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
     }
 }
 
-pub fn to_str(path: &Path) -> &str {
-    path.as_os_str().to_str().unwrap()
-}
-
-pub async fn cli_cmd(cmd: &str, task: &str, args: &[&str]) -> Result<(), Error> {
-    let output = tokio::process::Command::new(cmd)
+/// Executes an external command, more or less as if on the CLI.
+/// @param cmd The command to execute
+/// @param task The human oriented description of the task/goal of this command execution
+/// @param args The arguments to pass to the command, as if on the CLI
+///
+/// # Errors
+///
+/// Returns `Error::ExtCmdFailedToInvoke` if the command was not found,
+/// or we do not have the permission to execute it.
+/// Returns `Error::ExtCmdUnsuccessfull` if the command was executed,
+/// but somethign went wrong/failed (exit state != 0).
+// pub async fn cli_cmd(cmd: &str, task: &str, args: &[&str]) -> Result<(), Error> {
+pub async fn cli_cmd<I, S>(cmd: &str, task: &str, args: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = S> + Send,
+    S: AsRef<OsStr>,
+{
+    let output = process::Command::new(cmd)
         .args(args)
         .output()
         .await
-        .map_err(|from| Error::ExtCmdFaileToInvoke {
+        .map_err(|from| Error::ExtCmdFailedToInvoke {
             from,
             cmd: cmd.to_owned(),
             task: task.to_owned(),
@@ -169,30 +186,27 @@ pub async fn cli_cmd(cmd: &str, task: &str, args: &[&str]) -> Result<(), Error> 
     Ok(())
 }
 
-pub async fn convert(
-    ont_request: &OntRequest,
-    ont_cache_dir: &Path,
-    from: &OntFile,
-) -> Result<OntFile, Error> {
+/// Converts from one RDF format to another.
+///
+/// # Errors
+///
+/// Returns `Error::NonMachineReadableSource` if conversion would be necessary,
+/// but the source is not machine readable.
+/// Returns `Error::NoConverter` if the conversion is not supported.
+pub async fn convert(from: &OntFile, to: &OntFile) -> Result<(), Error> {
     if !from.mime_type.is_machine_readable() {
         return Err(Error::NonMachineReadableSource {
             from: from.mime_type,
         });
     }
 
-    let ont_requested_file = ont_file(ont_cache_dir, ont_request.mime_type);
-    let to = OntFile {
-        file: ont_requested_file,
-        mime_type: ont_request.mime_type,
-    };
-
     if from.mime_type == to.mime_type {
-        return Ok(to);
+        return Ok(());
     }
 
     for converter in CONVERTERS.iter() {
         if converter.supports(from.mime_type, to.mime_type) {
-            return converter.convert(from, &to).await.map(|()| to);
+            return converter.convert(from, to).await;
         }
     }
 

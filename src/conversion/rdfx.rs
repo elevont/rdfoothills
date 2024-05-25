@@ -2,16 +2,22 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use axum::async_trait;
+use std::ffi::OsStr;
 
-use crate::cache::OntFile;
+use async_trait::async_trait;
+
+use super::OntFile;
 use crate::mime;
 
 #[derive(Debug, Default)]
 pub struct Converter;
 
 impl Converter {
-    async fn rdfx(args: &[&str]) -> Result<(), super::Error> {
+    async fn rdfx<I, S>(args: I) -> Result<(), super::Error>
+    where
+        I: IntoIterator<Item = S> + Send,
+        S: AsRef<OsStr>,
+    {
         super::cli_cmd("rdfx", "RDF format conversion", args).await
     }
 
@@ -63,13 +69,15 @@ impl super::Converter for Converter {
 
     async fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
         Self::rdfx(&[
-            "convert",
-            "--format",
-            super::to_rdflib_format(to.mime_type)
-                .expect("rdfx called with an invalid (-> unsupported by RDFlib) target type"),
-            "--output",
-            super::to_str(&to.file),
-            super::to_str(&from.file),
+            OsStr::new("convert"),
+            OsStr::new("--format"),
+            OsStr::new(
+                super::to_rdflib_format(to.mime_type)
+                    .expect("rdfx called with an invalid (-> unsupported by RDFlib) target type"),
+            ),
+            OsStr::new("--output"),
+            to.file.as_os_str(),
+            from.file.as_os_str(),
         ])
         .await
     }

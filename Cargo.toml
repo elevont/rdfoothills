@@ -3,20 +3,20 @@
 # SPDX-License-Identifier: Unlicense
 
 [package]
-name = "ontprox"
+name = "rdfoothills"
 version = "0.1.0"
 license = "AGPL-3.0-or-later"
-authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
+authors = ["Robin Vobruba <robin.vobruba@proton.me>"]
 description = """
-    A tiny HTTP service that allows to fetch an RDF ontology
-    that is available in one/a few format(s),
-    in others.
+    A collection of mostly small, RDF related utilities,
+    including conversion between different serialization formats,
+    using external tools.
     """
-repository = "https://github.com/hoijui/ontprox"
-homepage = "https://github.com/hoijui/ontprox"
-keywords = ["cli", "ci", "utility", "parsing", "git"] # TODO
-categories = ["command-line-utilities", "filesystem", "text-processing"] # TODO
-publish = false
+repository = "https://codeberg.org/elevont/rdfoothills"
+homepage = "https://codeberg.org/elevont/rdfoothills"
+keywords = ["rdf", "utility", "conversion"]
+categories = ["api-bindings", "data-structures", "encoding", "filesystem", "text-processing"]
+publish = true
 readme = "README.md"
 edition = "2021"
 
@@ -43,27 +43,10 @@ print_stderr = "warn"
 option_if_let_else = "allow"
 
 [dependencies]
-askama = { version = "0.12" }
-axum = { version = "0.7", features = ["multipart"] }
-axum-extra = { version = "0.9" }
-clap = { version = "4.4", features = ["cargo", "derive", "string"] }
-cli_utils = { version = "0.7", package = "cli_utils_hoijui" }
-const_format = "0.2"
-dirs = "5.0"
-futures = "0.3"
+async-trait = "0.1"
 git-version = "0.3"
 infer = "0.15"
 mediatype = "0.19"
 once_cell = "1.19"
-openssl = { version = "=0.10.64", features = ["vendored"] }
-regex = "1.10"
-reqwest = "0.12"
-serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
-tokio = { version = "1.28", features = ["full"] }
-tokio-util = { version = "0.7", features = ["io"] }
-tower = { version = "0.4", features = ["util"] }
-tower-http = { version = "0.5.0", features = ["fs", "trace"] }
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-url = "2.5"
+tokio = { version = "1.28", features = ["fs", "process"] }

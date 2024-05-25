@@ -15,6 +15,7 @@ use std::{
 };
 use std::{collections::HashMap, str::FromStr};
 use thiserror::Error;
+use tokio::fs;
 
 use crate::hasher;
 
@@ -180,17 +181,14 @@ const MEDIA_TYPE_YAML_LD: MediaType = MediaType::from_parts(
 const MEDIA_TYPE_TEXT_PLAIN: MediaType = MediaType::new(TEXT, mediatype::names::PLAIN);
 
 const FEXT_BINARY_RDF: &str = "brf";
-const FEXT_HDT: &str = "hdt"; // TODO This is a pure guess so far
 const FEXT_CSVW: &str = "csvw";
-const FEXT_CSVW_2: &str = "csv";
+const FEXT_CSV: &str = "csv";
+const FEXT_HDT: &str = "hdt"; // TODO This is a pure guess so far
 const FEXT_HEX_TUPLES: &str = "hext";
 const FEXT_HTML: &str = "html";
-const FEXT_HTML_2: &str = "xhtml";
-const FEXT_HTML_3: &str = "htm";
+const FEXT_XHTML: &str = "xhtml";
+const FEXT_HTML_2: &str = "htm";
 const FEXT_JSON_LD: &str = "jsonld";
-const FEXT_MICRODATA: &str = "html";
-const FEXT_MICRODATA_2: &str = "xhtml";
-const FEXT_MICRODATA_3: &str = "htm";
 const FEXT_N3: &str = "n3";
 const FEXT_ND_JSON_LD: &str = ".ndjsonld";
 const FEXT_ND_JSON_LD_2: &str = ".jsonl";
@@ -201,24 +199,46 @@ const FEXT_N_TRIPLES: &str = "nt";
 const FEXT_N_TRIPLES_STAR: &str = "nts"; // TODO This is a pure guess so far
 const FEXT_OWL_XML: &str = "owx";
 const FEXT_OWL_FUNCTIONAL: &str = "ofn";
-const FEXT_RDF_A: &str = "html";
-const FEXT_RDF_A_2: &str = "xhtml";
-const FEXT_RDF_A_3: &str = "htm";
 const FEXT_RDF_JSON: &str = "rj";
 const FEXT_RDF_XML: &str = "rdf";
 const FEXT_RDF_XML_2: &str = "rdfs";
 const FEXT_RDF_XML_3: &str = "owl";
-const FEXT_RDF_XML_4: &str = "xml";
 const FEXT_TRIG: &str = "trig";
 const FEXT_TRIG_STAR: &str = "trigs";
 const FEXT_TRIX: &str = "trix";
-const FEXT_TRIX_2: &str = "xml";
+const FEXT_XML: &str = "xml";
 const FEXT_TSVW: &str = "tsvw";
-const FEXT_TSVW_2: &str = "tsv";
+const FEXT_TSV: &str = "tsv";
 const FEXT_TURTLE: &str = "ttl";
 const FEXT_TURTLE_STAR: &str = "ttls";
 const FEXT_YAML_LD: &str = "yamlld";
 const FEXT_YAML_LD_2: &str = "ymlld";
+
+const FEXTS_BINARY_RDF: &[&str] = &[FEXT_BINARY_RDF];
+const FEXTS_CSVW: &[&str] = &[FEXT_CSVW, FEXT_CSV];
+const FEXTS_HDT: &[&str] = &[FEXT_HDT]; // TODO This is a pure guess so far
+const FEXTS_HEX_TUPLES: &[&str] = &[FEXT_HEX_TUPLES];
+const FEXTS_HTML: &[&str] = &[FEXT_HTML, FEXT_XHTML, FEXT_HTML_2];
+const FEXTS_JSON_LD: &[&str] = &[FEXT_JSON_LD];
+const FEXTS_MICRODATA: &[&str] = &[FEXT_HTML, FEXT_XHTML, FEXT_HTML_2];
+const FEXTS_N3: &[&str] = &[FEXT_N3];
+const FEXTS_ND_JSON_LD: &[&str] = &[FEXT_ND_JSON_LD, FEXT_ND_JSON_LD_2, FEXT_ND_JSON_LD_3];
+const FEXTS_N_QUADS: &[&str] = &[FEXT_N_QUADS];
+const FEXTS_N_QUADS_STAR: &[&str] = &[FEXT_N_QUADS_STAR]; // TODO This is a pure guess so far
+const FEXTS_N_TRIPLES: &[&str] = &[FEXT_N_TRIPLES];
+const FEXTS_N_TRIPLES_STAR: &[&str] = &[FEXT_N_TRIPLES_STAR]; // TODO This is a pure guess so far
+const FEXTS_OWL_XML: &[&str] = &[FEXT_OWL_XML, FEXT_XML];
+const FEXTS_OWL_FUNCTIONAL: &[&str] = &[FEXT_OWL_FUNCTIONAL];
+const FEXTS_RDF_A: &[&str] = &[FEXT_HTML, FEXT_XHTML, FEXT_HTML_2];
+const FEXTS_RDF_JSON: &[&str] = &[FEXT_RDF_JSON];
+const FEXTS_RDF_XML: &[&str] = &[FEXT_RDF_XML, FEXT_RDF_XML_2, FEXT_RDF_XML_3, FEXT_XML];
+const FEXTS_TRIG: &[&str] = &[FEXT_TRIG];
+const FEXTS_TRIG_STAR: &[&str] = &[FEXT_TRIG_STAR];
+const FEXTS_TRIX: &[&str] = &[FEXT_TRIX, FEXT_XML];
+const FEXTS_TSVW: &[&str] = &[FEXT_TSVW, FEXT_TSV];
+const FEXTS_TURTLE: &[&str] = &[FEXT_TURTLE];
+const FEXTS_TURTLE_STAR: &[&str] = &[FEXT_TURTLE_STAR];
+const FEXTS_YAML_LD: &[&str] = &[FEXT_YAML_LD, FEXT_YAML_LD_2];
 
 pub fn media_type2type(media_type: &MediaType) -> Option<Type> {
     let search_hash = hasher::hash_num(media_type);
@@ -362,9 +382,10 @@ impl Type {
     pub fn from_file_ext(file_ext: &str) -> Result<Self, ParseError> {
         Ok(match file_ext.to_lowercase().as_str() {
             FEXT_BINARY_RDF => Self::BinaryRdf,
-            FEXT_CSVW | FEXT_CSVW_2 => Self::Csvw,
+            FEXT_CSVW | FEXT_CSV => Self::Csvw,
             FEXT_HDT => Self::Hdt,
-            FEXT_HTML | FEXT_HTML_2 | FEXT_HTML_3 => Self::Html,
+            FEXT_HEX_TUPLES => Self::HexTuples,
+            FEXT_HTML | FEXT_XHTML | FEXT_HTML_2 => Self::Html,
             FEXT_JSON_LD => Self::JsonLd,
             FEXT_N3 => Self::N3,
             FEXT_ND_JSON_LD | FEXT_ND_JSON_LD_2 | FEXT_ND_JSON_LD_3 => Self::NdJsonLd,
@@ -374,13 +395,12 @@ impl Type {
             FEXT_N_TRIPLES_STAR => Self::NTriplesStar,
             FEXT_OWL_FUNCTIONAL => Self::OwlFunctional,
             FEXT_OWL_XML => Self::OwlXml,
-            // FEXT_RDF_A | FEXT_RDF_A_2 | FEXT_RDF_A_3 => Self::RdfA,
             FEXT_RDF_JSON => Self::RdfJson,
-            FEXT_RDF_XML | FEXT_RDF_XML_2 | FEXT_RDF_XML_3 | FEXT_RDF_XML_4 => Self::RdfXml,
+            FEXT_RDF_XML | FEXT_RDF_XML_2 | FEXT_RDF_XML_3 | FEXT_XML => Self::RdfXml,
             FEXT_TRIG => Self::TriG,
             FEXT_TRIG_STAR => Self::TriGStar,
-            FEXT_TRIX | FEXT_TRIX_2 => Self::TriX,
-            FEXT_TSVW | FEXT_TSVW_2 => Self::Tsvw,
+            FEXT_TRIX => Self::TriX,
+            FEXT_TSVW | FEXT_TSV => Self::Tsvw,
             FEXT_TURTLE => Self::Turtle,
             FEXT_TURTLE_STAR => Self::TurtleStar,
             FEXT_YAML_LD | FEXT_YAML_LD_2 => Self::YamlLd,
@@ -405,7 +425,7 @@ impl Type {
         if let Some(Ok(type_from_extension)) = type_from_extension_opt {
             Ok(type_from_extension)
         } else {
-            let content = tokio::fs::read(file).await.map_err(|err| {
+            let content = fs::read(file).await.map_err(|err| {
                 ParseError::NoKnownFileExtensionAndReadError(file.to_owned(), err.to_string())
             })?;
             Self::from_content(&content)
@@ -425,13 +445,12 @@ impl Type {
         Self::from_media_type(&media_typ)
     }
 
-    /// The MIME type as a string.
+    /// The (primary) MIME type as a string.
     #[must_use]
     pub const fn mime_type(self) -> &'static str {
         match self {
             Self::BinaryRdf => MIME_TYPE_BINARY_RDF,
             Self::Csvw => MIME_TYPE_CSVW,
-            Self::Hdt => MIME_TYPE_RDF_XML, // See <https://www.w3.org/submissions/2011/SUBM-HDT-20110330/#media>: "The media type of HDT is the media type of their parts. The Header SHOULD be represented in an RDF syntax. The normative format of the Header is [RDF/XML]"
             Self::HexTuples => MIME_TYPE_HEX_TUPLES,
             Self::Html => MIME_TYPE_HTML,
             Self::JsonLd => MIME_TYPE_JSON_LD,
@@ -446,7 +465,7 @@ impl Type {
             Self::OwlXml => MIME_TYPE_OWL_XML,
             Self::RdfA => MIME_TYPE_RDF_A,
             Self::RdfJson => MIME_TYPE_RDF_JSON,
-            Self::RdfXml => MIME_TYPE_RDF_XML,
+            Self::RdfXml | Self::Hdt => MIME_TYPE_RDF_XML, // See <https://www.w3.org/submissions/2011/SUBM-HDT-20110330/#media>: "The media type of HDT is the media type of their parts. The Header SHOULD be represented in an RDF syntax. The normative format of the Header is [RDF/XML]"
             Self::TriG => MIME_TYPE_TRIG,
             Self::TriGStar => MIME_TYPE_TRIG_STAR,
             Self::TriX => MIME_TYPE_TRIX,
@@ -457,6 +476,37 @@ impl Type {
         }
     }
 
+    /// All the known/sometimes found MIME types as strings.
+    #[must_use]
+    pub const fn mime_types(self) -> &'static [&'static str] {
+        match self {
+            Self::BinaryRdf => &[MIME_TYPE_BINARY_RDF],
+            Self::Csvw => &[MIME_TYPE_CSVW],
+            Self::HexTuples => &[MIME_TYPE_HEX_TUPLES],
+            Self::Html => &[MIME_TYPE_HTML, MIME_TYPE_HTML_2],
+            Self::JsonLd => &[MIME_TYPE_JSON_LD, MIME_TYPE_JSON_LD_2],
+            Self::Microdata => &[MIME_TYPE_MICRODATA],
+            Self::N3 => &[MIME_TYPE_N3, MIME_TYPE_N3_2],
+            Self::NdJsonLd => &[MIME_TYPE_ND_JSON_LD],
+            Self::NQuads => &[MIME_TYPE_N_QUADS],
+            Self::NQuadsStar => &[MIME_TYPE_N_QUADS_STAR],
+            Self::NTriples => &[MIME_TYPE_N_TRIPLES],
+            Self::NTriplesStar => &[MIME_TYPE_N_TRIPLES_STAR],
+            Self::OwlFunctional => &[MIME_TYPE_OWL_FUNCTIONAL],
+            Self::OwlXml => &[MIME_TYPE_OWL_XML],
+            Self::RdfA => &[MIME_TYPE_RDF_A],
+            Self::RdfJson => &[MIME_TYPE_RDF_JSON],
+            Self::RdfXml | Self::Hdt => &[MIME_TYPE_RDF_XML], // See <https://www.w3.org/submissions/2011/SUBM-HDT-20110330/#media>: "The media type of HDT is the media type of their parts. The Header SHOULD be represented in an RDF syntax. The normative format of the Header is [RDF/XML]"
+            Self::TriG => &[MIME_TYPE_TRIG],
+            Self::TriGStar => &[MIME_TYPE_TRIG_STAR],
+            Self::TriX => &[MIME_TYPE_TRIX],
+            Self::Tsvw => &[MIME_TYPE_TSVW],
+            Self::Turtle => &[MIME_TYPE_TURTLE],
+            Self::TurtleStar => &[MIME_TYPE_TURTLE_STAR, MIME_TYPE_TURTLE_STAR_2],
+            Self::YamlLd => &[MIME_TYPE_YAML_LD],
+        }
+    }
+
     /// Returns the respective type from the [mediatype](
     /// https://crates.io/crates/mediatype) crate.
     #[must_use]
@@ -464,7 +514,6 @@ impl Type {
         match self {
             Self::BinaryRdf => MEDIA_TYPE_BINARY_RDF,
             Self::Csvw => MEDIA_TYPE_CSVW,
-            Self::Hdt => MEDIA_TYPE_RDF_XML, // See <https://www.w3.org/submissions/2011/SUBM-HDT-20110330/#media>: "The media type of HDT is the media type of their parts. The Header SHOULD be represented in an RDF syntax. The normative format of the Header is [RDF/XML]"
             Self::HexTuples => MEDIA_TYPE_HEX_TUPLES,
             Self::Html => MEDIA_TYPE_HTML,
             Self::JsonLd => MEDIA_TYPE_JSON_LD,
@@ -479,7 +528,7 @@ impl Type {
             Self::OwlXml => MEDIA_TYPE_OWL_XML,
             Self::RdfA => MEDIA_TYPE_RDF_A,
             Self::RdfJson => MEDIA_TYPE_RDF_JSON,
-            Self::RdfXml => MEDIA_TYPE_RDF_XML,
+            Self::RdfXml | Self::Hdt => MEDIA_TYPE_RDF_XML, // See <https://www.w3.org/submissions/2011/SUBM-HDT-20110330/#media>: "The media type of HDT is the media type of their parts. The Header SHOULD be represented in an RDF syntax. The normative format of the Header is [RDF/XML]"
             Self::TriG => MEDIA_TYPE_TRIG,
             Self::TriGStar => MEDIA_TYPE_TRIG_STAR,
             Self::TriX => MEDIA_TYPE_TRIX,
@@ -499,9 +548,8 @@ impl Type {
             Self::Csvw => FEXT_CSVW,
             Self::Hdt => FEXT_HDT,
             Self::HexTuples => FEXT_HEX_TUPLES,
-            Self::Html => FEXT_HTML,
+            Self::Html | Self::Microdata | Self::RdfA => FEXT_HTML,
             Self::JsonLd => FEXT_JSON_LD,
-            Self::Microdata => FEXT_MICRODATA,
             Self::N3 => FEXT_N3,
             Self::NdJsonLd => FEXT_ND_JSON_LD,
             Self::NQuads => FEXT_N_QUADS,
@@ -510,7 +558,6 @@ impl Type {
             Self::NTriplesStar => FEXT_N_TRIPLES_STAR,
             Self::OwlFunctional => FEXT_OWL_FUNCTIONAL,
             Self::OwlXml => FEXT_OWL_XML,
-            Self::RdfA => FEXT_RDF_A,
             Self::RdfJson => FEXT_RDF_JSON,
             Self::RdfXml => FEXT_RDF_XML,
             Self::TriG => FEXT_TRIG,
@@ -520,6 +567,39 @@ impl Type {
             Self::Turtle => FEXT_TURTLE,
             Self::TurtleStar => FEXT_TURTLE_STAR,
             Self::YamlLd => FEXT_YAML_LD,
+        }
+    }
+
+    /// Returns the most common file extension for this MIME type,
+    /// for example `.ttl` for `text/turtle`.
+    #[must_use]
+    pub const fn file_exts(self) -> &'static [&'static str] {
+        match self {
+            Self::BinaryRdf => FEXTS_BINARY_RDF,
+            Self::Csvw => FEXTS_CSVW,
+            Self::Hdt => FEXTS_HDT,
+            Self::HexTuples => FEXTS_HEX_TUPLES,
+            Self::Html => FEXTS_HTML,
+            Self::JsonLd => FEXTS_JSON_LD,
+            Self::Microdata => FEXTS_MICRODATA,
+            Self::N3 => FEXTS_N3,
+            Self::NdJsonLd => FEXTS_ND_JSON_LD,
+            Self::NQuads => FEXTS_N_QUADS,
+            Self::NQuadsStar => FEXTS_N_QUADS_STAR,
+            Self::NTriples => FEXTS_N_TRIPLES,
+            Self::NTriplesStar => FEXTS_N_TRIPLES_STAR,
+            Self::OwlFunctional => FEXTS_OWL_FUNCTIONAL,
+            Self::OwlXml => FEXTS_OWL_XML,
+            Self::RdfA => FEXTS_RDF_A,
+            Self::RdfJson => FEXTS_RDF_JSON,
+            Self::RdfXml => FEXTS_RDF_XML,
+            Self::TriG => FEXTS_TRIG,
+            Self::TriGStar => FEXTS_TRIG_STAR,
+            Self::TriX => FEXTS_TRIX,
+            Self::Tsvw => FEXTS_TSVW,
+            Self::Turtle => FEXTS_TURTLE,
+            Self::TurtleStar => FEXTS_TURTLE_STAR,
+            Self::YamlLd => FEXTS_YAML_LD,
         }
     }
 
@@ -593,7 +673,7 @@ impl Type {
     pub const fn standard_definition_url(self) -> &'static str {
         match self {
             Self::BinaryRdf => todo!(), // TODO
-            Self::Csvw => "https://w3c.github.io/csvw/syntax/",
+            Self::Csvw | Self::Tsvw => "https://w3c.github.io/csvw/syntax/",
             Self::Hdt => "https://www.rdfhdt.org/",
             Self::HexTuples => "https://github.com/ontola/hextuples",
             Self::Html => todo!(), // TODO
@@ -610,14 +690,13 @@ impl Type {
                 "https://w3c.github.io/rdf-star/cg-spec/editors_draft.html#n-triples-star"
             }
             Self::OwlFunctional => todo!(), // TODO
-            Self::OwlXml => todo!(), // TODO
+            Self::OwlXml => todo!(),        // TODO
             Self::RdfA => "https://www.w3.org/2001/sw/wiki/RDFa",
             Self::RdfJson => "http://www.w3.org/ns/formats/RDF_JSON",
             Self::RdfXml => "http://www.w3.org/ns/formats/RDF_XML",
             Self::TriG => "http://www.w3.org/ns/formats/TriG",
             Self::TriGStar => "https://w3c.github.io/rdf-star/cg-spec/editors_draft.html#trig-star",
             Self::TriX => todo!(), // TODO
-            Self::Tsvw => "https://w3c.github.io/csvw/syntax/",
             Self::Turtle => "http://www.w3.org/ns/formats/Turtle",
             Self::TurtleStar => {
                 "https://w3c.github.io/rdf-star/cg-spec/editors_draft.html#turtle-star"
