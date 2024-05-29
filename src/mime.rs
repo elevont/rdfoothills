@@ -7,6 +7,7 @@ use mediatype::{
     MediaType,
 };
 use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
     ffi::OsStr,
@@ -291,7 +292,7 @@ pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<u64, Type>> = Lazy::new(|| {
 });
 
 /// The different mime-types of RDF serialization formats.
-#[derive(Copy, Clone, Debug, Default, /*DeserializeFromStr,*/ PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, Default, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Type {
     BinaryRdf,
     Csvw,
