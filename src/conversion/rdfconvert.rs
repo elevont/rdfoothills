@@ -12,6 +12,8 @@ use crate::mime;
 #[derive(Debug, Default)]
 pub struct Converter;
 
+const CLI_CMD: &str = "rdf-convert";
+
 impl Converter {
     async fn rdf_tools<I, S>(args: I) -> Result<(), super::Error>
     where
@@ -19,7 +21,7 @@ impl Converter {
         S: AsRef<OsStr>,
     {
         super::cli_cmd(
-            "rdf-convert",
+            CLI_CMD,
             "RDF format conversion (from/with pkg: 'rdftools')",
             args,
         )
@@ -36,6 +38,10 @@ impl super::Converter for Converter {
             typ: super::Type::Cli,
             name: "rdf-convert",
         }
+    }
+
+    fn is_available(&self) -> bool {
+        super::is_cli_cmd_available(CLI_CMD)
     }
 
     fn supports(&self, from: mime::Type, to: mime::Type) -> bool {

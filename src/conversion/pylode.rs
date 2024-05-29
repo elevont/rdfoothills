@@ -13,6 +13,8 @@ use crate::mime;
 #[derive(Debug, Default)]
 pub struct Converter;
 
+const CLI_CMD: &str = "pylode";
+
 static PYLODE_ARGS_BEGIN: Lazy<Vec<&'static OsStr>> = Lazy::new(|| {
     vec![
         OsStr::new("--sort"),
@@ -30,7 +32,7 @@ impl Converter {
         I: IntoIterator<Item = S> + Send,
         S: AsRef<OsStr>,
     {
-        super::cli_cmd("pylode", "RDF to HTML conversion", args).await
+        super::cli_cmd(CLI_CMD, "RDF to HTML conversion", args).await
     }
 }
 
@@ -43,6 +45,10 @@ impl super::Converter for Converter {
             typ: super::Type::Cli,
             name: "pyLODE",
         }
+    }
+
+    fn is_available(&self) -> bool {
+        super::is_cli_cmd_available(CLI_CMD)
     }
 
     fn supports(&self, from: mime::Type, to: mime::Type) -> bool {

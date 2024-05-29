@@ -12,13 +12,15 @@ use crate::mime;
 #[derive(Debug, Default)]
 pub struct Converter;
 
+const CLI_CMD: &str = "rdfx";
+
 impl Converter {
     async fn rdfx<I, S>(args: I) -> Result<(), super::Error>
     where
         I: IntoIterator<Item = S> + Send,
         S: AsRef<OsStr>,
     {
-        super::cli_cmd("rdfx", "RDF format conversion", args).await
+        super::cli_cmd(CLI_CMD, "RDF format conversion", args).await
     }
 
     const fn supports_format(fmt: mime::Type) -> bool {
@@ -61,6 +63,10 @@ impl super::Converter for Converter {
             typ: super::Type::Cli,
             name: "rdfx",
         }
+    }
+
+    fn is_available(&self) -> bool {
+        super::is_cli_cmd_available(CLI_CMD)
     }
 
     fn supports(&self, from: mime::Type, to: mime::Type) -> bool {

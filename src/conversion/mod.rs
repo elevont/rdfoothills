@@ -36,7 +36,7 @@ pub enum Error {
     #[error("The source format ({from}) format is not machine-readable, and therefore auto-conversion from it to any other format is impossible. ")]
     NonMachineReadableSource { from: mime::Type },
 
-    #[error("None of the supported converters can convert from {from} to {to}. ")]
+    #[error("None of the supported and available converters can convert from {from} to {to}. ")]
     NoConverter { from: mime::Type, to: mime::Type },
 
     #[error("Failed to run {cmd} for {task}: {from}")]
@@ -90,6 +90,7 @@ pub struct Info {
 #[async_trait]
 pub trait Converter: Send + Sync {
     fn info(&self) -> Info;
+    fn is_available(&self) -> bool;
     fn supports(&self, from: mime::Type, to: mime::Type) -> bool;
     async fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), Error>;
 }
@@ -146,6 +147,13 @@ pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
         mime::Type::TriX => Some("trix"),
         mime::Type::Turtle => Some("turtle"),
     }
+}
+
+/// Checks if an external command is available
+/// and we have the rights to execute it.
+#[must_use]
+pub fn is_cli_cmd_available(cmd: &str) -> bool {
+    process::Command::new(cmd).spawn().is_ok()
 }
 
 /// Executes an external command, more or less as if on the CLI.
@@ -205,7 +213,7 @@ pub async fn convert(from: &OntFile, to: &OntFile) -> Result<(), Error> {
     }
 
     for converter in CONVERTERS.iter() {
-        if converter.supports(from.mime_type, to.mime_type) {
+        if converter.supports(from.mime_type, to.mime_type) && converter.is_available() {
             return converter.convert(from, to).await;
         }
     }
