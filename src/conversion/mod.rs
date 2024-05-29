@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+mod oxrdfio;
 mod pylode;
 mod rdfconvert;
 mod rdfx;
@@ -23,6 +24,7 @@ pub struct OntFile {
 
 static CONVERTERS: Lazy<Vec<Box<dyn Converter>>> = Lazy::new(|| {
     let mut converters: Vec<Box<dyn Converter>> = vec![
+        Box::new(oxrdfio::Converter),
         Box::new(rdfx::Converter),
         Box::new(rdfconvert::Converter),
         Box::new(pylode::Converter),
@@ -58,6 +60,13 @@ pub enum Error {
         "Input and output formats are the same. Try to just copy the file, if really required"
     )]
     NoConversionRequired,
+
+    #[error("The input file was not syntactically valid:\n{0}")]
+    Syntax(String),
+
+    /// Represents all cases of `std::io::Error`.
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
