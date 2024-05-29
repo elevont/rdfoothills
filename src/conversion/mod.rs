@@ -53,6 +53,11 @@ pub enum Error {
         exit_code: i32,
         stderr: String,
     },
+
+    #[error(
+        "Input and output formats are the same. Try to just copy the file, if really required"
+    )]
+    NoConversionRequired,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -209,7 +214,7 @@ pub async fn convert(from: &OntFile, to: &OntFile) -> Result<(), Error> {
     }
 
     if from.mime_type == to.mime_type {
-        return Ok(());
+        return Err(Error::NoConversionRequired);
     }
 
     for converter in CONVERTERS.iter() {
