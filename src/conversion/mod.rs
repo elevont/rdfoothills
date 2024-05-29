@@ -86,10 +86,10 @@ pub enum Type {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Info {
-    quality: Quality,
-    priority: Priority,
-    typ: Type,
-    name: &'static str,
+    pub quality: Quality,
+    pub priority: Priority,
+    pub typ: Type,
+    pub name: &'static str,
 }
 
 #[async_trait]
@@ -206,7 +206,7 @@ where
 /// Returns `Error::NonMachineReadableSource` if conversion would be necessary,
 /// but the source is not machine readable.
 /// Returns `Error::NoConverter` if the conversion is not supported.
-pub async fn convert(from: &OntFile, to: &OntFile) -> Result<(), Error> {
+pub async fn convert(from: &OntFile, to: &OntFile) -> Result<Info, Error> {
     if !from.mime_type.is_machine_readable() {
         return Err(Error::NonMachineReadableSource {
             from: from.mime_type,
@@ -219,7 +219,7 @@ pub async fn convert(from: &OntFile, to: &OntFile) -> Result<(), Error> {
 
     for converter in CONVERTERS.iter() {
         if converter.supports(from.mime_type, to.mime_type) && converter.is_available() {
-            return converter.convert(from, to).await;
+            return converter.convert(from, to).await.map(|()| converter.info());
         }
     }
 
