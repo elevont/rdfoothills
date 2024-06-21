@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "rdfoothills-iri"
+description = """
+    A collection of mostly small, RDF related utilities,
+    including conversion between different serialization formats,
+    using external tools.
+    This part provides a few basic types to reference IRIs and ontologies.
+    """
+readme = "README.md"
+
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+#readme.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+oxiri = { workspace = true }
+serde = { workspace = true, features = ["derive"], optional = true }
+
+[features]
+default = []
+# default = ["serde"]
+
+# Implement serde::{Deserialize, Serialize} for some items.
+serde = ["oxiri/serde", "dep:serde"]

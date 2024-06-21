@@ -7,6 +7,7 @@ use mediatype::{
     MediaType,
 };
 use once_cell::sync::Lazy;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
@@ -16,9 +17,10 @@ use std::{
 };
 use std::{collections::HashMap, str::FromStr};
 use thiserror::Error;
+#[cfg(feature = "async")]
 use tokio::fs;
 
-use crate::hasher;
+use rdfoothills_base::hasher;
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -292,7 +294,8 @@ pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<u64, Type>> = Lazy::new(|| {
 });
 
 /// The different mime-types of RDF serialization formats.
-#[derive(Copy, Clone, Debug, Default, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, Hash, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Type {
     BinaryRdf,
     Csvw,
@@ -418,19 +421,52 @@ impl Type {
     /// Will return `ParseError::UnrecognizedFileExtension` if the extension is not supported.
     /// Will return `ParseError::UnidentifiedContent` if the content is not recognized.
     /// Will return `ParseError::UnrecognizedContent` if the content is recognized but not supported.
-    pub async fn from_path(file: &StdPath) -> Result<Self, ParseError> {
-        let type_from_extension_opt = file
-            .extension()
-            .map(OsStr::to_string_lossy)
-            .map(|fext| Self::from_file_ext(fext.as_ref()));
+    pub fn from_path(file: &StdPath) -> Result<Self, ParseError> {
+        let type_from_extension_opt = Self::from_file_by_ext(file);
         if let Some(Ok(type_from_extension)) = type_from_extension_opt {
             Ok(type_from_extension)
         } else {
-            let content = fs::read(file).await.map_err(|err| {
-                ParseError::NoKnownFileExtensionAndReadError(file.to_owned(), err.to_string())
-            })?;
-            Self::from_content(&content)
+            let content_res = std::fs::read(file);
+            Self::from_path_content_res(content_res, file)
         }
+    }
+
+    /// Tries to identify the MIME type first from the extension,
+    /// and then from the content of the file.
+    ///
+    /// # Errors
+    ///
+    /// Will return `ParseError::NoKnownFileExtensionAndReadError` if the file has no extension adn we failed to read the file.
+    /// Will return `ParseError::UnrecognizedFileExtension` if the extension is not supported.
+    /// Will return `ParseError::UnidentifiedContent` if the content is not recognized.
+    /// Will return `ParseError::UnrecognizedContent` if the content is recognized but not supported.
+    #[cfg(feature = "async")]
+    pub async fn from_path_async(file: &StdPath) -> Result<Self, ParseError> {
+        let type_from_extension_opt = Self::from_file_by_ext(file);
+        if let Some(Ok(type_from_extension)) = type_from_extension_opt {
+            Ok(type_from_extension)
+        } else {
+            let content_res = fs::read(file).await;
+            #[cfg(not(feature = "async"))]
+            let content_res = fs::read(file);
+            Self::from_path_content_res(content_res, file)
+        }
+    }
+
+    fn from_file_by_ext(file: &StdPath) -> Option<Result<Self, ParseError>> {
+        file.extension()
+            .map(OsStr::to_string_lossy)
+            .map(|fext| Self::from_file_ext(fext.as_ref()))
+    }
+
+    fn from_path_content_res(
+        content_res: Result<Vec<u8>, std::io::Error>,
+        file: &StdPath,
+    ) -> Result<Self, ParseError> {
+        let content = content_res.map_err(|err| {
+            ParseError::NoKnownFileExtensionAndReadError(file.to_owned(), err.to_string())
+        })?;
+        Self::from_content(&content)
     }
 
     /// Detect the MIME type from the content of a file.
@@ -673,11 +709,11 @@ impl Type {
     #[must_use]
     pub const fn standard_definition_url(self) -> &'static str {
         match self {
-            Self::BinaryRdf => todo!(), // TODO
+            Self::BinaryRdf => "https://rdf4j.org/documentation/reference/rdf4j-binary/",
             Self::Csvw | Self::Tsvw => "https://w3c.github.io/csvw/syntax/",
             Self::Hdt => "https://www.rdfhdt.org/",
             Self::HexTuples => "https://github.com/ontola/hextuples",
-            Self::Html => todo!(), // TODO
+            Self::Html => "https://www.w3schools.com/html/html_formatting.asp",
             Self::JsonLd => "http://www.w3.org/ns/formats/JSON-LD",
             Self::Microdata => "https://www.w3.org/wiki/Mapping_Microdata_to_RDF",
             Self::N3 => "http://www.w3.org/ns/formats/N3",
@@ -690,14 +726,14 @@ impl Type {
             Self::NTriplesStar => {
                 "https://w3c.github.io/rdf-star/cg-spec/editors_draft.html#n-triples-star"
             }
-            Self::OwlFunctional => todo!(), // TODO
-            Self::OwlXml => todo!(),        // TODO
+            Self::OwlFunctional => "https://www.w3.org/TR/owl2-syntax/#Functional-Style_Syntax",
+            Self::OwlXml => "https://www.w3.org/TR/owl-xmlsyntax/",
             Self::RdfA => "https://www.w3.org/2001/sw/wiki/RDFa",
             Self::RdfJson => "http://www.w3.org/ns/formats/RDF_JSON",
             Self::RdfXml => "http://www.w3.org/ns/formats/RDF_XML",
             Self::TriG => "http://www.w3.org/ns/formats/TriG",
             Self::TriGStar => "https://w3c.github.io/rdf-star/cg-spec/editors_draft.html#trig-star",
-            Self::TriX => todo!(), // TODO
+            Self::TriX => "https://en.wikipedia.org/wiki/TriX_(serialization_format)",
             Self::Turtle => "http://www.w3.org/ns/formats/Turtle",
             Self::TurtleStar => {
                 "https://w3c.github.io/rdf-star/cg-spec/editors_draft.html#turtle-star"

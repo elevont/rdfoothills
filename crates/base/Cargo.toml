@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "rdfoothills-base"
+description = """
+    A collection of mostly small, RDF related utilities,
+    including conversion between different serialization formats,
+    using external tools.
+    This are the base utilities of rdfoothills,
+    mostly to be used by the other crates in the workspace.
+    """
+readme = "README.md"
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+#readme.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+git-version = { workspace = true }
+url = { workspace = true, optional = true }
+regex = { workspace = true, optional = true }
+once_cell = { workspace = true, optional = true }
+tokio = { workspace = true, features = ["fs"], optional = true }
+
+[features]
+# default = []
+default = ["async"]
+
+# Use async/tokio (vs std).
+async = ["dep:tokio"]
+
+# Makes `util::url2fname` available.
+url = ["dep:url", "dep:once_cell", "dep:regex"]

@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-pub mod conversion;
 pub mod hasher;
-pub mod mime;
+pub mod util;
 
 use git_version::git_version;
 

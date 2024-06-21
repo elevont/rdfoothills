@@ -2,16 +2,21 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+#[cfg(feature = "oxrdfio")]
 mod oxrdfio;
 mod pylode;
 mod rdfconvert;
 mod rdfx;
 
+#[cfg(feature = "async")]
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
+#[cfg(not(feature = "async"))]
+use std::process;
+#[cfg(feature = "async")]
 use tokio::process;
 
-use crate::mime;
+use rdfoothills_mime as mime;
 
 use std::ffi::OsStr;
 use std::io;
@@ -24,11 +29,12 @@ pub struct OntFile {
 
 static CONVERTERS: Lazy<Vec<Box<dyn Converter>>> = Lazy::new(|| {
     let mut converters: Vec<Box<dyn Converter>> = vec![
-        Box::new(oxrdfio::Converter),
         Box::new(rdfx::Converter),
         Box::new(rdfconvert::Converter),
         Box::new(pylode::Converter),
     ];
+    #[cfg(feature = "oxrdfio")]
+    converters.push(Box::new(oxrdfio::Converter));
     converters.sort();
     converters
 });
@@ -101,12 +107,28 @@ pub struct Info {
     pub name: &'static str,
 }
 
-#[async_trait]
+#[cfg_attr(feature = "async", async_trait)]
 pub trait Converter: Send + Sync {
     fn info(&self) -> Info;
     fn is_available(&self) -> bool;
     fn supports(&self, from: mime::Type, to: mime::Type) -> bool;
-    async fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), Error>;
+
+    /// Converts from one RDF format to another - non-async version.
+    ///
+    /// # Errors
+    ///
+    /// - if the conversion is not suported (see `Converter::supports`)
+    /// - if the conversion fails
+    fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), Error>;
+
+    /// Converts from one RDF format to another - async version.
+    ///
+    /// # Errors
+    ///
+    /// - if the conversion is not suported (see `Converter::supports`)
+    /// - if the conversion fails
+    #[cfg(feature = "async")]
+    async fn convert_async(&self, from: &OntFile, to: &OntFile) -> Result<(), Error>;
 }
 
 impl PartialEq for dyn Converter {
@@ -170,32 +192,16 @@ pub fn is_cli_cmd_available(cmd: &str) -> bool {
     process::Command::new(cmd).spawn().is_ok()
 }
 
-/// Executes an external command, more or less as if on the CLI.
-/// @param cmd The command to execute
-/// @param task The human oriented description of the task/goal of this command execution
-/// @param args The arguments to pass to the command, as if on the CLI
-///
-/// # Errors
-///
-/// Returns `Error::ExtCmdFailedToInvoke` if the command was not found,
-/// or we do not have the permission to execute it.
-/// Returns `Error::ExtCmdUnsuccessfull` if the command was executed,
-/// but somethign went wrong/failed (exit state != 0).
-// pub async fn cli_cmd(cmd: &str, task: &str, args: &[&str]) -> Result<(), Error> {
-pub async fn cli_cmd<I, S>(cmd: &str, task: &str, args: I) -> Result<(), Error>
-where
-    I: IntoIterator<Item = S> + Send,
-    S: AsRef<OsStr>,
-{
-    let output = process::Command::new(cmd)
-        .args(args)
-        .output()
-        .await
-        .map_err(|from| Error::ExtCmdFailedToInvoke {
-            from,
-            cmd: cmd.to_owned(),
-            task: task.to_owned(),
-        })?;
+fn handle_cli_cmd_output(
+    cmd: &str,
+    task: &str,
+    output_res: io::Result<std::process::Output>,
+) -> Result<(), Error> {
+    let output = output_res.map_err(|from| Error::ExtCmdFailedToInvoke {
+        from,
+        cmd: cmd.to_owned(),
+        task: task.to_owned(),
+    })?;
     if !output.status.success() {
         return Err(Error::ExtCmdUnsuccessfull {
             cmd: cmd.to_owned(),
@@ -208,6 +214,53 @@ where
     Ok(())
 }
 
+/// Executes an external command, more or less as if on the CLI.
+/// @param cmd The command to execute
+/// @param task The human oriented description of the task/goal of this command execution
+/// @param args The arguments to pass to the command, as if on the CLI
+///
+/// # Errors
+///
+/// Returns `Error::ExtCmdFailedToInvoke` if the command was not found,
+/// or we do not have the permission to execute it.
+/// Returns `Error::ExtCmdUnsuccessfull` if the command was executed,
+/// but somethign went wrong/failed (exit state != 0).
+pub fn cli_cmd<I, S>(cmd: &str, task: &str, args: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = S> + Send,
+    S: AsRef<OsStr>,
+{
+    handle_cli_cmd_output(
+        cmd,
+        task,
+        std::process::Command::new(cmd).args(args).output(),
+    )
+}
+
+/// Executes an external command, more or less as if on the CLI.
+/// @param cmd The command to execute
+/// @param task The human oriented description of the task/goal of this command execution
+/// @param args The arguments to pass to the command, as if on the CLI
+///
+/// # Errors
+///
+/// Returns `Error::ExtCmdFailedToInvoke` if the command was not found,
+/// or we do not have the permission to execute it.
+/// Returns `Error::ExtCmdUnsuccessfull` if the command was executed,
+/// but something went wrong/failed (exit state != 0).
+#[cfg(feature = "async")]
+pub async fn cli_cmd_async<I, S>(cmd: &str, task: &str, args: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = S> + Send,
+    S: AsRef<OsStr>,
+{
+    handle_cli_cmd_output(
+        cmd,
+        task,
+        process::Command::new(cmd).args(args).output().await,
+    )
+}
+
 /// Converts from one RDF format to another.
 ///
 /// # Errors
@@ -215,7 +268,7 @@ where
 /// Returns `Error::NonMachineReadableSource` if conversion would be necessary,
 /// but the source is not machine readable.
 /// Returns `Error::NoConverter` if the conversion is not supported.
-pub async fn convert(from: &OntFile, to: &OntFile) -> Result<Info, Error> {
+pub fn select_converter(from: &OntFile, to: &OntFile) -> Result<&'static dyn Converter, Error> {
     if !from.mime_type.is_machine_readable() {
         return Err(Error::NonMachineReadableSource {
             from: from.mime_type,
@@ -228,7 +281,7 @@ pub async fn convert(from: &OntFile, to: &OntFile) -> Result<Info, Error> {
 
     for converter in CONVERTERS.iter() {
         if converter.supports(from.mime_type, to.mime_type) && converter.is_available() {
-            return converter.convert(from, to).await.map(|()| converter.info());
+            return Ok(converter.as_ref());
         }
     }
 
@@ -236,4 +289,34 @@ pub async fn convert(from: &OntFile, to: &OntFile) -> Result<Info, Error> {
         from: from.mime_type,
         to: to.mime_type,
     })
+}
+
+/// Converts from one RDF format to another.
+///
+/// # Errors
+///
+/// Returns `Error::NonMachineReadableSource` if conversion would be necessary,
+/// but the source is not machine readable.
+/// Returns `Error::NoConverter` if the conversion is not supported.
+/// Returns `Error::*` if conversion failed.
+pub fn convert(from: &OntFile, to: &OntFile) -> Result<Info, Error> {
+    let converter = select_converter(from, to)?;
+    converter.convert(from, to).map(|()| converter.info())
+}
+
+/// Converts from one RDF format to another.
+///
+/// # Errors
+///
+/// Returns `Error::NonMachineReadableSource` if conversion would be necessary,
+/// but the source is not machine readable.
+/// Returns `Error::NoConverter` if the conversion is not supported.
+/// Returns `Error::*` if conversion failed.
+#[cfg(feature = "async")]
+pub async fn convert_async(from: &OntFile, to: &OntFile) -> Result<Info, Error> {
+    let converter = select_converter(from, to)?;
+    converter
+        .convert_async(from, to)
+        .await
+        .map(|()| converter.info())
 }

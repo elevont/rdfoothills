@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "rdfoothills-conversion"
+description = """
+    A collection of mostly small, RDF related utilities,
+    including conversion between different serialization formats,
+    using external tools.
+    This part allows to convert between different RDF serialization formats and to HTML.
+    """
+readme = "README.md"
+
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+#readme.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+async-trait = { workspace = true, optional = true }
+rdfoothills-mime = { workspace = true }
+once_cell = { workspace = true }
+oxrdfio = { workspace = true, features = ["rdf-star"], optional = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["fs", "process"], optional = true }
+
+[features]
+# default = []
+default = ["oxrdfio", "async"]
+
+# Support converwsion wiht rust RDF I/O library `oxrdfio`.
+oxrdfio = ["dep:oxrdfio"]
+
+# Use async/tokio (vs std).
+async = ["rdfoothills-mime/async", "oxrdfio/async-tokio", "dep:async-trait", "dep:tokio"]

@@ -4,23 +4,34 @@
 
 use std::ffi::OsStr;
 
+#[cfg(feature = "async")]
 use async_trait::async_trait;
 
 use super::OntFile;
-use crate::mime;
+use rdfoothills_mime as mime;
 
 #[derive(Debug, Default)]
 pub struct Converter;
 
 const CLI_CMD: &str = "rdfx";
+const CLI_CMD_DESC: &str = "RDF format conversion";
 
 impl Converter {
-    async fn rdfx<I, S>(args: I) -> Result<(), super::Error>
+    fn rdfx<I, S>(args: I) -> Result<(), super::Error>
     where
         I: IntoIterator<Item = S> + Send,
         S: AsRef<OsStr>,
     {
-        super::cli_cmd(CLI_CMD, "RDF format conversion", args).await
+        super::cli_cmd(CLI_CMD, CLI_CMD_DESC, args)
+    }
+
+    #[cfg(feature = "async")]
+    async fn rdfx_async<I, S>(args: I) -> Result<(), super::Error>
+    where
+        I: IntoIterator<Item = S> + Send,
+        S: AsRef<OsStr>,
+    {
+        super::cli_cmd_async(CLI_CMD, CLI_CMD_DESC, args).await
     }
 
     const fn supports_format(fmt: mime::Type) -> bool {
@@ -54,7 +65,23 @@ impl Converter {
     }
 }
 
-#[async_trait]
+macro_rules! convert_args {
+    ($from:expr, $to:expr) => {
+        &[
+            OsStr::new("convert"),
+            OsStr::new("--format"),
+            OsStr::new(
+                super::to_rdflib_format($to.mime_type)
+                    .expect("rdfx called with an invalid (-> unsupported by RDFlib) target type"),
+            ),
+            OsStr::new("--output"),
+            $to.file.as_os_str(),
+            $from.file.as_os_str(),
+        ]
+    };
+}
+
+#[cfg_attr(feature = "async", async_trait)]
 impl super::Converter for Converter {
     fn info(&self) -> super::Info {
         super::Info {
@@ -73,18 +100,12 @@ impl super::Converter for Converter {
         Self::supports_format(from) && Self::supports_format(to)
     }
 
-    async fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
-        Self::rdfx(&[
-            OsStr::new("convert"),
-            OsStr::new("--format"),
-            OsStr::new(
-                super::to_rdflib_format(to.mime_type)
-                    .expect("rdfx called with an invalid (-> unsupported by RDFlib) target type"),
-            ),
-            OsStr::new("--output"),
-            to.file.as_os_str(),
-            from.file.as_os_str(),
-        ])
-        .await
+    fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
+        Self::rdfx(convert_args!(from, to))
+    }
+
+    #[cfg(feature = "async")]
+    async fn convert_async(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
+        Self::rdfx_async(convert_args!(from, to)).await
     }
 }

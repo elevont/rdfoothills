@@ -1,31 +1,36 @@
-# SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+# SPDX-FileCopyrightText: 2022 - 2024 Robin Vobruba <hoijui.quaero@gmail.com>
 #
 # SPDX-License-Identifier: Unlicense
 
-[package]
-name = "rdfoothills"
+[workspace]
+resolver = "2"
+members = [
+   "crates/base",
+   "crates/conversion",
+   "crates/iri",
+   "crates/mime",
+]
+#default-members = ["crates/mime"]
+#default-members = []
+
+[workspace.package]
 version = "0.3.1"
 license = "AGPL-3.0-or-later"
-authors = ["Robin Vobruba <robin.vobruba@proton.me>"]
-description = """
-    A collection of mostly small, RDF related utilities,
-    including conversion between different serialization formats,
-    using external tools.
-    """
-repository = "https://codeberg.org/elevont/rdfoothills"
-homepage = "https://codeberg.org/elevont/rdfoothills"
-keywords = ["rdf", "utility", "conversion"]
-categories = ["api-bindings", "data-structures", "encoding", "filesystem", "text-processing"]
-publish = true
+authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
+repository = "https://github.com/hoijui/osh-dir-std-rs"
+homepage = "https://github.com/hoijui/osh-dir-std-rs"
+keywords = ["norm", "osh", "directory", "structure"]
+categories = ["command-line-utilities", "filesystem", "text-processing"]
 readme = "README.md"
 edition = "2021"
 
-[lints.rust]
+[workspace.lints.rust]
 rust_2021_compatibility = { level = "warn", priority = -1 }
+unused_crate_dependencies = "warn"
 
-[lints.clippy]
+[workspace.lints.clippy]
 all = { level = "deny", priority = -1 }
-pedantic = { level = "warn", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 cargo = { level = "warn", priority = -1 }
 wildcard_enum_match_arm = "warn"
@@ -33,22 +38,30 @@ string_slice = "warn"
 indexing_slicing = "warn"
 clone_on_ref_ptr = "warn"
 try_err = "warn"
-shadow_reuse = "allow"
+shadow_reuse = "warn"
 empty_structs_with_brackets = "warn"
 else_if_without_else = "warn"
 use_debug = "warn"
 print_stdout = "warn"
 print_stderr = "warn"
-#default_trait_access = "allow"
-option_if_let_else = "allow"
+dbg_macro = "deny"
+todo = "deny"
 
-[dependencies]
+[workspace.dependencies]
+rdfoothills-base = { path = "crates/base" }
+rdfoothills-conversion = { path = "crates/conversion" }
+rdfoothills-iri = { path = "crates/iri" }
+rdfoothills-mime = { path = "crates/mime" }
 async-trait = "0.1"
 git-version = "0.3"
 infer = "0.16"
 mediatype = "0.19"
 once_cell = "1.19"
-oxrdfio = { version = "0.1.0-alpha.6", features = ["async-tokio", "rdf-star"] }
+oxrdfio = { version = "0.1.0-alpha.6", features = ["rdf-star"] }
+oxiri = "0.2"
 serde = { version = "1.0", features = ["derive"] }
+regex = { version = "1.0", default-features = false }
 thiserror = "1.0"
+url = { version = "2.5", default-features = false }
 tokio = { version = "1.38", features = ["fs", "process"] }
+

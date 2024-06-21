@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "rdfoothills-mime"
+description = """
+    A collection of mostly small, RDF related utilities,
+    including conversion between different serialization formats,
+    using external tools.
+    This part provides RDF serialization format types (plus HTML),
+    and code to identify them.
+    """
+readme = "README.md"
+
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+#readme.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+rdfoothills-base = { workspace = true }
+infer = { workspace = true }
+mediatype = { workspace = true }
+once_cell = { workspace = true }
+# oxiri = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"], optional = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["fs"], optional = true }
+
+[features]
+default = []
+# default = ["async", "serde"]
+
+# Use async/tokio (vs std).
+async = ["rdfoothills-base/async", "dep:tokio"]
+
+# Implement serde::{Deserialize, Serialize} for some items.
+serde = ["dep:serde"]

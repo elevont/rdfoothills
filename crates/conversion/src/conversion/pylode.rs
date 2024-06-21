@@ -4,16 +4,18 @@
 
 use std::ffi::OsStr;
 
+#[cfg(feature = "async")]
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 
 use super::OntFile;
-use crate::mime;
+use rdfoothills_mime as mime;
 
 #[derive(Debug, Default)]
 pub struct Converter;
 
 const CLI_CMD: &str = "pylode";
+const CLI_CMD_DESC: &str = "RDF to HTML conversion";
 
 static PYLODE_ARGS_BEGIN: Lazy<Vec<&'static OsStr>> = Lazy::new(|| {
     vec![
@@ -27,16 +29,33 @@ static PYLODE_ARGS_BEGIN: Lazy<Vec<&'static OsStr>> = Lazy::new(|| {
 });
 
 impl Converter {
-    async fn pylode<I, S>(args: I) -> Result<(), super::Error>
+    fn pylode<I, S>(args: I) -> Result<(), super::Error>
     where
         I: IntoIterator<Item = S> + Send,
         S: AsRef<OsStr>,
     {
-        super::cli_cmd(CLI_CMD, "RDF to HTML conversion", args).await
+        super::cli_cmd(CLI_CMD, CLI_CMD_DESC, args)
+    }
+
+    #[cfg(feature = "async")]
+    async fn pylode_async<I, S>(args: I) -> Result<(), super::Error>
+    where
+        I: IntoIterator<Item = S> + Send,
+        S: AsRef<OsStr>,
+    {
+        super::cli_cmd_async(CLI_CMD, CLI_CMD_DESC, args).await
     }
 }
 
-#[async_trait]
+macro_rules! convert_args {
+    ($from:expr, $to:expr) => {
+        PYLODE_ARGS_BEGIN
+            .iter()
+            .chain(&[$to.file.as_os_str(), $from.file.as_os_str()])
+    };
+}
+
+#[cfg_attr(feature = "async", async_trait)]
 impl super::Converter for Converter {
     fn info(&self) -> super::Info {
         super::Info {
@@ -55,12 +74,12 @@ impl super::Converter for Converter {
         to == mime::Type::Html && super::to_rdflib_format(from).is_some()
     }
 
-    async fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
-        Self::pylode(
-            PYLODE_ARGS_BEGIN
-                .iter()
-                .chain(&[to.file.as_os_str(), from.file.as_os_str()]),
-        )
-        .await
+    fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
+        Self::pylode(convert_args!(from, to))
+    }
+
+    #[cfg(feature = "async")]
+    async fn convert_async(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
+        Self::pylode_async(convert_args!(from, to)).await
     }
 }

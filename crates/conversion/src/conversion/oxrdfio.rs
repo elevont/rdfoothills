@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+#[cfg(feature = "async")]
 use async_trait::async_trait;
 use oxrdfio::{RdfFormat, RdfParseError, RdfParser, RdfSerializer};
+#[cfg(feature = "async")]
 use tokio::fs;
 
 use super::OntFile;
-use crate::mime;
+use rdfoothills_mime as mime;
 
 #[derive(Debug, Default)]
 pub struct Converter;
@@ -43,7 +45,14 @@ impl Converter {
     }
 }
 
-#[async_trait]
+fn map_rdf_parse_error(parse_err: RdfParseError) -> super::Error {
+    match parse_err {
+        RdfParseError::Io(io_err) => super::Error::Io(io_err),
+        RdfParseError::Syntax(syntax_err) => super::Error::Syntax(syntax_err.to_string()),
+    }
+}
+
+#[cfg_attr(feature = "async", async_trait)]
 impl super::Converter for Converter {
     fn info(&self) -> super::Info {
         super::Info {
@@ -62,29 +71,41 @@ impl super::Converter for Converter {
         Self::supports_format(from) && Self::supports_format(to)
     }
 
-    async fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
+    fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
         let from_fmt = Self::to_oxrdf_format(from.mime_type)
             .expect("convert called with an invalid (-> unsupported by OxRDF) input format");
         let to_fmt = Self::to_oxrdf_format(to.mime_type)
             .expect("convert called with an invalid (-> unsupported by OxRDF) output format");
 
-        let in_file = fs::File::open(&from.file).await.unwrap();
-        let mut reader = RdfParser::from_format(from_fmt).parse_tokio_async_read(in_file);
-        let out_file = fs::File::create(&to.file).await.unwrap();
+        let in_file = std::fs::File::open(&from.file);
+        let reader = RdfParser::from_format(from_fmt).parse_read(in_file.unwrap());
+        let out_file = std::fs::File::create(&to.file);
+        let mut writer = RdfSerializer::from_format(to_fmt).serialize_to_write(out_file.unwrap());
+        for quad_res in reader {
+            let quad = quad_res.map_err(map_rdf_parse_error)?;
+            writer.write_quad(&quad)?;
+        }
+
+        Ok(())
+    }
+
+    #[cfg(feature = "async")]
+    async fn convert_async(&self, from: &OntFile, to: &OntFile) -> Result<(), super::Error> {
+        let from_fmt = Self::to_oxrdf_format(from.mime_type)
+            .expect("convert called with an invalid (-> unsupported by OxRDF) input format");
+        let to_fmt = Self::to_oxrdf_format(to.mime_type)
+            .expect("convert called with an invalid (-> unsupported by OxRDF) output format");
+
+        let in_file = fs::File::open(&from.file).await;
+        let mut reader = RdfParser::from_format(from_fmt).parse_tokio_async_read(in_file.unwrap());
+        let out_file = fs::File::create(&to.file).await;
         let mut writer =
-            RdfSerializer::from_format(to_fmt).serialize_to_tokio_async_write(out_file);
+            RdfSerializer::from_format(to_fmt).serialize_to_tokio_async_write(out_file.unwrap());
         while let Some(quad_res) = reader.next().await {
-            let quad = match quad_res {
-                Ok(quad) => quad,
-                Err(parse_err) => match parse_err {
-                    RdfParseError::Io(io_err) => return Err(io_err.into()),
-                    RdfParseError::Syntax(syntax_err) => {
-                        return Err(super::Error::Syntax(syntax_err.to_string()))
-                    }
-                },
-            };
+            let quad = quad_res.map_err(map_rdf_parse_error)?;
             writer.write_quad(&quad).await?;
         }
+
         Ok(())
     }
 }
