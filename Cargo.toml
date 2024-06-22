@@ -48,10 +48,10 @@ dbg_macro = "deny"
 todo = "deny"
 
 [workspace.dependencies]
-rdfoothills-base = { path = "crates/base" }
-rdfoothills-conversion = { path = "crates/conversion" }
-rdfoothills-iri = { path = "crates/iri" }
-rdfoothills-mime = { path = "crates/mime" }
+rdfoothills-base = { version = "0.3.1", path = "crates/base" }
+rdfoothills-conversion = { version = "0.3.1", path = "crates/conversion" }
+rdfoothills-iri = { version = "0.3.1", path = "crates/iri" }
+rdfoothills-mime = { version = "0.3.1", path = "crates/mime" }
 async-trait = "0.1"
 git-version = "0.3"
 infer = "0.16"
