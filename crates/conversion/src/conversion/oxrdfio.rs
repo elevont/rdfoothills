@@ -78,12 +78,12 @@ impl super::Converter for Converter {
             .expect("convert called with an invalid (-> unsupported by OxRDF) output format");
 
         let in_file = std::fs::File::open(&from.file);
-        let reader = RdfParser::from_format(from_fmt).parse_read(in_file.unwrap());
+        let reader = RdfParser::from_format(from_fmt).for_reader(in_file.unwrap());
         let out_file = std::fs::File::create(&to.file);
-        let mut writer = RdfSerializer::from_format(to_fmt).serialize_to_write(out_file.unwrap());
+        let mut writer = RdfSerializer::from_format(to_fmt).for_writer(out_file.unwrap());
         for quad_res in reader {
             let quad = quad_res.map_err(map_rdf_parse_error)?;
-            writer.write_quad(&quad)?;
+            writer.serialize_quad(&quad)?;
         }
 
         Ok(())
@@ -97,13 +97,13 @@ impl super::Converter for Converter {
             .expect("convert called with an invalid (-> unsupported by OxRDF) output format");
 
         let in_file = fs::File::open(&from.file).await;
-        let mut reader = RdfParser::from_format(from_fmt).parse_tokio_async_read(in_file.unwrap());
+        let mut reader = RdfParser::from_format(from_fmt).for_tokio_async_reader(in_file.unwrap());
         let out_file = fs::File::create(&to.file).await;
         let mut writer =
-            RdfSerializer::from_format(to_fmt).serialize_to_tokio_async_write(out_file.unwrap());
+            RdfSerializer::from_format(to_fmt).for_tokio_async_writer(out_file.unwrap());
         while let Some(quad_res) = reader.next().await {
             let quad = quad_res.map_err(map_rdf_parse_error)?;
-            writer.write_quad(&quad).await?;
+            writer.serialize_quad(&quad).await?;
         }
 
         Ok(())
