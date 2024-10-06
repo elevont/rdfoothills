@@ -215,9 +215,10 @@ fn handle_cli_cmd_output(
 }
 
 /// Executes an external command, more or less as if on the CLI.
-/// @param cmd The command to execute
-/// @param task The human oriented description of the task/goal of this command execution
-/// @param args The arguments to pass to the command, as if on the CLI
+///
+/// * `cmd` - The command to execute
+/// * `task` - The human oriented description of the task/goal of this command execution
+/// * `args` - The arguments to pass to the command, as if on the CLI
 ///
 /// # Errors
 ///
@@ -238,9 +239,10 @@ where
 }
 
 /// Executes an external command, more or less as if on the CLI.
-/// @param cmd The command to execute
-/// @param task The human oriented description of the task/goal of this command execution
-/// @param args The arguments to pass to the command, as if on the CLI
+///
+/// * `cmd` - The command to execute
+/// * `task` - The human oriented description of the task/goal of this command execution
+/// * `args` - The arguments to pass to the command, as if on the CLI
 ///
 /// # Errors
 ///
