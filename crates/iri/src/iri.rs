@@ -12,7 +12,7 @@ pub const PREFIX_EMPTY: &str = "";
 pub const PREFIX_EMPTY_ID: &str = "__NO_PREFIX_ID__";
 
 // TODO Find a better name then Prefix; maybe: OntId, OntIdPair, NamespaceId, RefixAndIri, PrefIri, ...
-/// Represents a kind of basic ID for a set of RDF tripples
+/// Represents a kind of basic ID for a set of RDF triples
 /// that could be though of as being in one namespace,
 /// most commonly this is used for ontologies within a file.
 ///
