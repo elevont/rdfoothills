@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "rdfoothills-vocab"
+description = """Provides shortcuts for common RDF ontologies/vocabularies,
+as an extension to what can be foudn in `oxrdf::vocab`."""
+readme = "README.md"
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+#readme.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+git-version = { workspace = true }
+oxrdf = { workspace = true }
+once_cell = { workspace = true }
+const_format = { workspace = true }
+

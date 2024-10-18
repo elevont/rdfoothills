@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "rdfoothills-vocabgen"
+description = """Reads vocabularies (OWL) and generates shortcuts
+for their RDF terms to be used in Rust code
+(based on the `oxrdf` library).
+See `oxrdf::vocab` and `rdfoothills::vocab` for sample output."""
+readme = "README.md"
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+#readme.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+clap = { workspace = true }
+cli_utils = { workspace = true }
+const_format = { workspace = true }
+convert_case = { workspace = true }
+git-version = { workspace = true }
+oxrdf = { workspace = true }
+oxrdfio = { workspace = true }
+petgraph = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
