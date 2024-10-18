@@ -17,6 +17,9 @@ members = [
 version = "0.4.0"
 license = "AGPL-3.0-or-later"
 authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
+description = """A collection of mostly small, RDF related utilities,
+including conversion between different serialization formats,
+using external tools."""
 repository = "https://github.com/hoijui/osh-dir-std-rs"
 homepage = "https://github.com/hoijui/osh-dir-std-rs"
 keywords = ["norm", "osh", "directory", "structure"]

@@ -4,13 +4,8 @@
 
 [package]
 name = "rdfoothills-base"
-description = """
-    A collection of mostly small, RDF related utilities,
-    including conversion between different serialization formats,
-    using external tools.
-    This are the base utilities of rdfoothills,
-    mostly to be used by the other crates in the workspace.
-    """
+description = """Base utilities of rdfoothills,
+mostly to be used by the other crates in the workspace."""
 readme = "README.md"
 version.workspace = true
 license.workspace = true

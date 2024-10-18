@@ -4,12 +4,8 @@
 
 [package]
 name = "rdfoothills-conversion"
-description = """
-    A collection of mostly small, RDF related utilities,
-    including conversion between different serialization formats,
-    using external tools.
-    This part allows to convert between different RDF serialization formats and to HTML.
-    """
+description = """Allows to convert between different RDF serialization formats
+and to HTML."""
 readme = "README.md"
 
 version.workspace = true

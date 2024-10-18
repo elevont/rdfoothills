@@ -4,12 +4,7 @@
 
 [package]
 name = "rdfoothills-iri"
-description = """
-    A collection of mostly small, RDF related utilities,
-    including conversion between different serialization formats,
-    using external tools.
-    This part provides a few basic types to reference IRIs and ontologies.
-    """
+description = "Provides a few basic types to reference IRIs and ontologies."
 readme = "README.md"
 
 version.workspace = true

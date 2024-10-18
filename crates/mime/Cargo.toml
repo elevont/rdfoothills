@@ -4,13 +4,8 @@
 
 [package]
 name = "rdfoothills-mime"
-description = """
-    A collection of mostly small, RDF related utilities,
-    including conversion between different serialization formats,
-    using external tools.
-    This part provides RDF serialization format types (plus HTML),
-    and code to identify them.
-    """
+description = """Provides RDF serialization format types (plus HTML),
+and code to identify them."""
 readme = "README.md"
 
 version.workspace = true
