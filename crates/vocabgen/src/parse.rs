@@ -420,6 +420,8 @@ pub const NS_PREFERRED_PREFIX: &str = "{namespace_prefix}";
             } else {
                 String::new()
             };
+            // NOTE: This prevents triggering a false positive
+            #[allow(clippy::needless_raw_string_hashes)]
             let subj_str = format!(
                 r###"
 named_node{}!(
