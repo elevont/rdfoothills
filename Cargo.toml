@@ -16,7 +16,7 @@ members = [
 #default-members = []
 
 [workspace.package]
-version = "0.5.0"
+version = "0.5.1"
 license = "AGPL-3.0-or-later"
 authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
 description = """A collection of mostly small, RDF related utilities,
@@ -67,10 +67,10 @@ oxrdf = "0.2"
 oxrdfio = { version = "0.1", features = ["rdf-star"] }
 petgraph = { version = "0.6", default-features = false }
 regex = { version = "1.0", default-features = false }
-rdfoothills-base = { version = "0.5.0", path = "crates/base" }
-rdfoothills-conversion = { version = "0.5.0", path = "crates/conversion" }
-rdfoothills-iri = { version = "0.5.0", path = "crates/iri" }
-rdfoothills-mime = { version = "0.5.0", path = "crates/mime" }
+rdfoothills-base = { version = "0.5.1", path = "crates/base" }
+rdfoothills-conversion = { version = "0.5.1", path = "crates/conversion" }
+rdfoothills-iri = { version = "0.5.1", path = "crates/iri" }
+rdfoothills-mime = { version = "0.5.1", path = "crates/mime" }
 serde = { version = "1.0", features = ["derive"] }
 tempfile = "3.13"
 thiserror = "1.0"

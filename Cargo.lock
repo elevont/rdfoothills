@@ -589,7 +589,7 @@ dependencies = [
 
 [[package]]
 name = "rdfoothills-base"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "git-version",
  "once_cell",
@@ -600,7 +600,7 @@ dependencies = [
 
 [[package]]
 name = "rdfoothills-conversion"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "async-trait",
  "once_cell",
@@ -612,7 +612,7 @@ dependencies = [
 
 [[package]]
 name = "rdfoothills-iri"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "oxiri",
  "serde",
@@ -620,7 +620,7 @@ dependencies = [
 
 [[package]]
 name = "rdfoothills-mime"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "infer",
  "mediatype",
@@ -633,7 +633,7 @@ dependencies = [
 
 [[package]]
 name = "rdfoothills-vocab"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "const_format",
  "git-version",
@@ -643,7 +643,7 @@ dependencies = [
 
 [[package]]
 name = "rdfoothills-vocabgen"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "clap",
  "cli_utils_hoijui",
