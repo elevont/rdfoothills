@@ -328,7 +328,21 @@ pub enum Type {
 impl FromStr for Type {
     type Err = ParseError;
 
+    /// Instead of a single MIME type of the form `"<type>/<subtype>"`,
+    /// as is supported by [`Self::from_mime_type`],
+    /// this supports parsing a comma-separated list of MIME types,
+    /// for example `"text/turtle,text/html"`,
+    /// as is used by browsers when they accept multiple types.
+    ///
+    /// A real world example from Firefox:
+    /// `text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        for single_type in s.split(',') {
+            let single_type_without_parameters = single_type.split(';').next().unwrap();
+            if let Ok(parsed_type) = Self::from_mime_type(single_type_without_parameters) {
+                return Ok(parsed_type);
+            }
+        }
         Self::from_mime_type(s)
     }
 }
