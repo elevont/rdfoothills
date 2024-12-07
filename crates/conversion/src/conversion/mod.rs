@@ -55,7 +55,7 @@ pub enum Error {
     },
 
     #[error("Running {cmd} for {task} returned with non-zero exit status '{exit_code}', indicating an error. stderr:\n{stderr}")]
-    ExtCmdUnsuccessfull {
+    ExtCmdUnsuccessful {
         cmd: String,
         task: String,
         exit_code: i32,
@@ -117,7 +117,7 @@ pub trait Converter: Send + Sync {
     ///
     /// # Errors
     ///
-    /// - if the conversion is not suported (see `Converter::supports`)
+    /// - if the conversion is not supported (see `Converter::supports`)
     /// - if the conversion fails
     fn convert(&self, from: &OntFile, to: &OntFile) -> Result<(), Error>;
 
@@ -125,7 +125,7 @@ pub trait Converter: Send + Sync {
     ///
     /// # Errors
     ///
-    /// - if the conversion is not suported (see `Converter::supports`)
+    /// - if the conversion is not supported (see `Converter::supports`)
     /// - if the conversion fails
     #[cfg(feature = "async")]
     async fn convert_async(&self, from: &OntFile, to: &OntFile) -> Result<(), Error>;
@@ -203,7 +203,7 @@ fn handle_cli_cmd_output(
         task: task.to_owned(),
     })?;
     if !output.status.success() {
-        return Err(Error::ExtCmdUnsuccessfull {
+        return Err(Error::ExtCmdUnsuccessful {
             cmd: cmd.to_owned(),
             task: task.to_owned(),
             exit_code: output.status.code().unwrap_or(-1),
@@ -224,8 +224,8 @@ fn handle_cli_cmd_output(
 ///
 /// Returns `Error::ExtCmdFailedToInvoke` if the command was not found,
 /// or we do not have the permission to execute it.
-/// Returns `Error::ExtCmdUnsuccessfull` if the command was executed,
-/// but somethign went wrong/failed (exit state != 0).
+/// Returns `Error::ExtCmdUnsuccessful` if the command was executed,
+/// but something went wrong/failed (exit state != 0).
 pub fn cli_cmd<I, S>(cmd: &str, task: &str, args: I) -> Result<(), Error>
 where
     I: IntoIterator<Item = S> + Send,
@@ -248,7 +248,7 @@ where
 ///
 /// Returns `Error::ExtCmdFailedToInvoke` if the command was not found,
 /// or we do not have the permission to execute it.
-/// Returns `Error::ExtCmdUnsuccessfull` if the command was executed,
+/// Returns `Error::ExtCmdUnsuccessful` if the command was executed,
 /// but something went wrong/failed (exit state != 0).
 #[cfg(feature = "async")]
 pub async fn cli_cmd_async<I, S>(cmd: &str, task: &str, args: I) -> Result<(), Error>

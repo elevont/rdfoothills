@@ -402,13 +402,13 @@ pub const NS_PREFERRED_PREFIX: &str = "{namespace_prefix}";
             );
             let mut subj_postfix_const = subj_postfix_const_base.clone();
             // Ensure that the chosen constant name is unique within the file
-            let mut distingushing_idx = 1;
+            let mut distinguishing_idx = 1;
             while seen_consts.contains(&subj_postfix_const) {
-                distingushing_idx += 1;
+                distinguishing_idx += 1;
                 subj_postfix_const.clear();
                 subj_postfix_const.push_str(&subj_postfix_const_base);
                 subj_postfix_const.push_str("__");
-                subj_postfix_const.push_str(distingushing_idx.to_string().as_str());
+                subj_postfix_const.push_str(distinguishing_idx.to_string().as_str());
             }
             let deprecation_args = if subj.deprecation.enabled {
                 format!(

@@ -39,7 +39,7 @@ pub enum ParseError {
     #[error("File '{0}' has no extension")]
     NoFileExtension(PathBuf),
 
-    #[error("File '{0}' has no (known) extension, and we faield to read it - '{1}'")]
+    #[error("File '{0}' has no (known) extension, and we failed to read it - '{1}'")]
     NoKnownFileExtensionAndReadError(PathBuf, String),
 
     #[error("File content is identified as {0}, which is not recognized as an ontology file type")]
@@ -450,7 +450,7 @@ impl Type {
     ///
     /// # Errors
     ///
-    /// Will return `ParseError::NoKnownFileExtensionAndReadError` if the file has no extension adn we failed to read the file.
+    /// Will return `ParseError::NoKnownFileExtensionAndReadError` if the file has no extension and we failed to read the file.
     /// Will return `ParseError::UnrecognizedFileExtension` if the extension is not supported.
     /// Will return `ParseError::UnidentifiedContent` if the content is not recognized.
     /// Will return `ParseError::UnrecognizedContent` if the content is recognized but not supported.

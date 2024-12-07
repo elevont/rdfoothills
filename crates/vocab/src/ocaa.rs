@@ -107,7 +107,7 @@ named_node!(
 //     STATE_PROVIDED,
 //     NS_BASE,
 //     "missing",
-//     "Indicates that the subject is a missing content-format within the ontology that linsk to it"
+//     "Indicates that the subject is a missing content-format within the ontology that links to it"
 // );
 // named_node!(
 //     PROVIDES_MIME_TYPE,
@@ -120,13 +120,13 @@ named_node!(
     NS_BASE,
     "providedByNamespaceIri",
     "Indicates whether the subject is a content-format provided by the original namespace IRI for and within the ontology that links to it (bool)"
-    // "Indicates that the object mime-tpye is provided by the original IRI vs an alternative one or none at all."
+    // "Indicates that the object mime-type is provided by the original IRI vs an alternative one or none at all."
 );
 // named_node!(
 //     PROVIDES_MIME_TYPE_BY_ORIG_IRI,
 //     NS_BASE,
 //     "providesMimeTypeByOrigIri",
-//     "Indicates that the object mime-tpye is provided by the original IRI vs an alternative one or none at all."
+//     "Indicates that the object mime-type is provided by the original IRI vs an alternative one or none at all."
 // );
 named_node!(
     URI_COMPATIBLE,
@@ -150,17 +150,17 @@ named_node!(
     ENDS_WELL,
     NS_BASE,
     "endsWell",
-    "Whether the subject Ontologies IRI/namespace ends with `/` or `#`, as is best-practise"
+    "Whether the subject Ontologies IRI/namespace ends with `/` or `#`, as is best-practice"
 );
 named_node!(
-    PATH_FOLLOWS_BEST_PRACTISE,
+    PATH_FOLLOWS_BEST_PRACTICE,
     NS_BASE,
     "pathFollowsBestPractice",
-    "Whether the subject Ontologies IRI/namespace path part conforms to best practises (see <https://more.metadatacenter.org/recommended-iri-patterns-ontologies-and-their-terms>)"
+    "Whether the subject Ontologies IRI/namespace path part conforms to best practice (see <https://more.metadatacenter.org/recommended-iri-patterns-ontologies-and-their-terms>)"
 );
 named_node!(
     HAS_NO_QUERY,
     NS_BASE,
     "hasNoQuery",
-    "Whether the subject Ontologies IRI/namespace query part is empty, as is best-practise"
+    "Whether the subject Ontologies IRI/namespace query part is empty, as is best-practice"
 );
