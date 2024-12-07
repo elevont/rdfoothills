@@ -73,7 +73,7 @@ rdfoothills-iri = { version = "0.5.1", path = "crates/iri" }
 rdfoothills-mime = { version = "0.5.1", path = "crates/mime" }
 serde = { version = "1.0", features = ["derive"] }
 tempfile = "3.13"
-thiserror = "1.0"
+thiserror = "2.0"
 tokio = { version = "1.38", features = ["fs", "process"] }
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
