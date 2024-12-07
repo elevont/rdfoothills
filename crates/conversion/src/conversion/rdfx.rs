@@ -19,7 +19,7 @@ const CLI_CMD_DESC: &str = "RDF format conversion";
 impl Converter {
     fn rdfx<I, S>(args: I) -> Result<(), super::Error>
     where
-        I: IntoIterator<Item = S> + Send,
+        I: IntoIterator<Item = S> + Send + Clone,
         S: AsRef<OsStr>,
     {
         super::cli_cmd(CLI_CMD, CLI_CMD_DESC, args)
@@ -28,7 +28,7 @@ impl Converter {
     #[cfg(feature = "async")]
     async fn rdfx_async<I, S>(args: I) -> Result<(), super::Error>
     where
-        I: IntoIterator<Item = S> + Send,
+        I: IntoIterator<Item = S> + Send + Clone,
         S: AsRef<OsStr>,
     {
         super::cli_cmd_async(CLI_CMD, CLI_CMD_DESC, args).await

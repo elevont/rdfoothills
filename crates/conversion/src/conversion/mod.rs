@@ -214,6 +214,22 @@ fn handle_cli_cmd_output(
     Ok(())
 }
 
+macro_rules! trace_cmd {
+    ($specifier:expr, $cmd:expr, $args:expr) => {
+        tracing::trace!(
+            "Running CLI command{}:\n{} {}",
+            $specifier,
+            $cmd,
+            $args
+                .clone()
+                .into_iter()
+                .map(|arg| arg.as_ref().to_string_lossy().to_string())
+                .collect::<Vec<_>>()
+                .join(" ")
+        );
+    };
+}
+
 /// Executes an external command, more or less as if on the CLI.
 ///
 /// * `cmd` - The command to execute
@@ -228,9 +244,10 @@ fn handle_cli_cmd_output(
 /// but something went wrong/failed (exit state != 0).
 pub fn cli_cmd<I, S>(cmd: &str, task: &str, args: I) -> Result<(), Error>
 where
-    I: IntoIterator<Item = S> + Send,
+    I: IntoIterator<Item = S> + Send + Clone,
     S: AsRef<OsStr>,
 {
+    trace_cmd!("", cmd, args);
     handle_cli_cmd_output(
         cmd,
         task,
@@ -253,9 +270,10 @@ where
 #[cfg(feature = "async")]
 pub async fn cli_cmd_async<I, S>(cmd: &str, task: &str, args: I) -> Result<(), Error>
 where
-    I: IntoIterator<Item = S> + Send,
+    I: IntoIterator<Item = S> + Send + Clone,
     S: AsRef<OsStr>,
 {
+    trace_cmd!(" (async)", cmd, args);
     handle_cli_cmd_output(
         cmd,
         task,

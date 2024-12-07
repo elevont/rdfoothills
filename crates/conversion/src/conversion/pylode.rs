@@ -31,7 +31,7 @@ static PYLODE_ARGS_BEGIN: Lazy<Vec<&'static OsStr>> = Lazy::new(|| {
 impl Converter {
     fn pylode<I, S>(args: I) -> Result<(), super::Error>
     where
-        I: IntoIterator<Item = S> + Send,
+        I: IntoIterator<Item = S> + Send + Clone,
         S: AsRef<OsStr>,
     {
         super::cli_cmd(CLI_CMD, CLI_CMD_DESC, args)
@@ -40,7 +40,7 @@ impl Converter {
     #[cfg(feature = "async")]
     async fn pylode_async<I, S>(args: I) -> Result<(), super::Error>
     where
-        I: IntoIterator<Item = S> + Send,
+        I: IntoIterator<Item = S> + Send + Clone,
         S: AsRef<OsStr>,
     {
         super::cli_cmd_async(CLI_CMD, CLI_CMD_DESC, args).await
