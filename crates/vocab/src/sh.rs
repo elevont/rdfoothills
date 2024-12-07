@@ -4,6 +4,8 @@
 
 //! [SHACL](http://www.w3.org/ns/shacl) vocabulary.
 
+// TODO Apply vocabgen to OWL
+
 use crate::named_node;
 
 pub const NS_BASE: &str = "http://www.w3.org/ns/shacl#";
