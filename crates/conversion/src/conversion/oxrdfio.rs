@@ -29,6 +29,7 @@ impl Converter {
             | mime::Type::HexTuples
             | mime::Type::Html
             | mime::Type::JsonLd
+            | mime::Type::Manchester
             | mime::Type::Microdata
             | mime::Type::NdJsonLd
             | mime::Type::OwlFunctional

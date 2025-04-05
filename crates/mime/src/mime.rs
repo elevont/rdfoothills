@@ -57,6 +57,7 @@ const MIME_TYPE_HTML: &str = "text/html";
 const MIME_TYPE_HTML_2: &str = "application/xhtml+xml";
 const MIME_TYPE_JSON_LD: &str = "application/ld+json";
 const MIME_TYPE_JSON_LD_2: &str = "application/json-ld"; // JSON-LD (invalid/unofficial form)
+const MIME_TYPE_MANCHESTER: &str = "text/owl-manchester";
 const MIME_TYPE_MICRODATA: &str = "application/x-microdata"; // TODO should this be application/x-microdata+json?
 const MIME_TYPE_N3: &str = "text/rdf+n3";
 const MIME_TYPE_N3_2: &str = "text/n3";
@@ -105,6 +106,8 @@ const MEDIA_TYPE_JSON_LD: MediaType = MediaType::from_parts(
 );
 const MEDIA_TYPE_JSON_LD_2: MediaType =
     MediaType::new(TEXT, mediatype::Name::new_unchecked("json-ld"));
+const MEDIA_TYPE_MANCHESTER: MediaType =
+    MediaType::new(TEXT, mediatype::Name::new_unchecked("owl-manchester"));
 const MEDIA_TYPE_MICRODATA: MediaType = MediaType::new(TEXT, mediatype::names::HTML);
 // const MEDIA_TYPE_MICRODATA_2: MediaType = MediaType::from_parts(
 //     APPLICATION,
@@ -192,6 +195,7 @@ const FEXT_HTML: &str = "html";
 const FEXT_XHTML: &str = "xhtml";
 const FEXT_HTML_2: &str = "htm";
 const FEXT_JSON_LD: &str = "jsonld";
+const FEXT_MANCHESTER: &str = "omn";
 const FEXT_N3: &str = "n3";
 const FEXT_ND_JSON_LD: &str = ".ndjsonld";
 const FEXT_ND_JSON_LD_2: &str = ".jsonl";
@@ -223,6 +227,7 @@ const FEXTS_HDT: &[&str] = &[FEXT_HDT]; // TODO This is a pure guess so far
 const FEXTS_HEX_TUPLES: &[&str] = &[FEXT_HEX_TUPLES];
 const FEXTS_HTML: &[&str] = &[FEXT_HTML, FEXT_XHTML, FEXT_HTML_2];
 const FEXTS_JSON_LD: &[&str] = &[FEXT_JSON_LD];
+const FEXTS_MANCHESTER: &[&str] = &[FEXT_MANCHESTER];
 const FEXTS_MICRODATA: &[&str] = &[FEXT_HTML, FEXT_XHTML, FEXT_HTML_2];
 const FEXTS_N3: &[&str] = &[FEXT_N3];
 const FEXTS_ND_JSON_LD: &[&str] = &[FEXT_ND_JSON_LD, FEXT_ND_JSON_LD_2, FEXT_ND_JSON_LD_3];
@@ -258,6 +263,7 @@ pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<u64, Type>> = Lazy::new(|| {
         (MEDIA_TYPE_HTML_2, Type::Html),
         (MEDIA_TYPE_JSON_LD, Type::JsonLd),
         (MEDIA_TYPE_JSON_LD_2, Type::JsonLd),
+        (MEDIA_TYPE_MANCHESTER, Type::Manchester),
         // (MEDIA_TYPE_MICRODATA, Type::Microdata),
         // (MEDIA_TYPE_MICRODATA_2, Type::Microdata),
         (MEDIA_TYPE_N3, Type::N3),
@@ -304,6 +310,7 @@ pub enum Type {
     #[default]
     Html,
     JsonLd,
+    Manchester,
     Microdata,
     N3,
     NdJsonLd,
@@ -405,6 +412,7 @@ impl Type {
             FEXT_HEX_TUPLES => Self::HexTuples,
             FEXT_HTML | FEXT_XHTML | FEXT_HTML_2 => Self::Html,
             FEXT_JSON_LD => Self::JsonLd,
+            FEXT_MANCHESTER => Self::Manchester,
             FEXT_N3 => Self::N3,
             FEXT_ND_JSON_LD | FEXT_ND_JSON_LD_2 | FEXT_ND_JSON_LD_3 => Self::NdJsonLd,
             FEXT_N_QUADS => Self::NQuads,
@@ -505,6 +513,7 @@ impl Type {
             Self::HexTuples => MIME_TYPE_HEX_TUPLES,
             Self::Html => MIME_TYPE_HTML,
             Self::JsonLd => MIME_TYPE_JSON_LD,
+            Self::Manchester => MIME_TYPE_MANCHESTER,
             Self::Microdata => MIME_TYPE_MICRODATA,
             Self::N3 => MIME_TYPE_N3,
             Self::NdJsonLd => MIME_TYPE_ND_JSON_LD,
@@ -536,6 +545,7 @@ impl Type {
             Self::HexTuples => &[MIME_TYPE_HEX_TUPLES],
             Self::Html => &[MIME_TYPE_HTML, MIME_TYPE_HTML_2],
             Self::JsonLd => &[MIME_TYPE_JSON_LD, MIME_TYPE_JSON_LD_2],
+            Self::Manchester => &[MIME_TYPE_MANCHESTER],
             Self::Microdata => &[MIME_TYPE_MICRODATA],
             Self::N3 => &[MIME_TYPE_N3, MIME_TYPE_N3_2],
             Self::NdJsonLd => &[MIME_TYPE_ND_JSON_LD],
@@ -568,6 +578,7 @@ impl Type {
             Self::HexTuples => MEDIA_TYPE_HEX_TUPLES,
             Self::Html => MEDIA_TYPE_HTML,
             Self::JsonLd => MEDIA_TYPE_JSON_LD,
+            Self::Manchester => MEDIA_TYPE_MANCHESTER,
             Self::Microdata => MEDIA_TYPE_MICRODATA,
             Self::N3 => MEDIA_TYPE_N3,
             Self::NdJsonLd => MEDIA_TYPE_ND_JSON_LD,
@@ -601,6 +612,7 @@ impl Type {
             Self::HexTuples => FEXT_HEX_TUPLES,
             Self::Html | Self::Microdata | Self::RdfA => FEXT_HTML,
             Self::JsonLd => FEXT_JSON_LD,
+            Self::Manchester => FEXT_MANCHESTER,
             Self::N3 => FEXT_N3,
             Self::NdJsonLd => FEXT_ND_JSON_LD,
             Self::NQuads => FEXT_N_QUADS,
@@ -632,6 +644,7 @@ impl Type {
             Self::HexTuples => FEXTS_HEX_TUPLES,
             Self::Html => FEXTS_HTML,
             Self::JsonLd => FEXTS_JSON_LD,
+            Self::Manchester => FEXTS_MANCHESTER,
             Self::Microdata => FEXTS_MICRODATA,
             Self::N3 => FEXTS_N3,
             Self::NdJsonLd => FEXTS_ND_JSON_LD,
@@ -664,6 +677,7 @@ impl Type {
             Self::HexTuples => "HexTuples",
             Self::Html => "HTML",
             Self::JsonLd => "JSON-LD",
+            Self::Manchester => "OWL-Manchester",
             Self::Microdata => "Microdata",
             Self::N3 => "N3",
             Self::NdJsonLd => "NDJSON-LD",
@@ -697,6 +711,7 @@ impl Type {
             | Self::Hdt
             | Self::HexTuples
             | Self::JsonLd
+            | Self::Manchester
             | Self::Microdata
             | Self::N3
             | Self::NdJsonLd
@@ -729,6 +744,7 @@ impl Type {
             Self::HexTuples => "https://github.com/ontola/hextuples",
             Self::Html => "https://www.w3schools.com/html/html_formatting.asp",
             Self::JsonLd => "http://www.w3.org/ns/formats/JSON-LD",
+            Self::Manchester => "https://www.w3.org/TR/owl2-manchester-syntax/",
             Self::Microdata => "https://www.w3.org/wiki/Mapping_Microdata_to_RDF",
             Self::N3 => "http://www.w3.org/ns/formats/N3",
             Self::NdJsonLd => "https://github.com/json-ld/ndjson-ld",
@@ -768,6 +784,7 @@ impl Type {
             | Self::HexTuples
             | Self::Html
             | Self::JsonLd
+            | Self::Manchester
             | Self::Microdata
             | Self::N3
             | Self::NdJsonLd

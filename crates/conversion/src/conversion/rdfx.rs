@@ -47,6 +47,7 @@ impl Converter {
             | mime::Type::Hdt
             | mime::Type::HexTuples
             | mime::Type::Html
+            | mime::Type::Manchester
             | mime::Type::Microdata
             | mime::Type::NdJsonLd
             | mime::Type::NQuads

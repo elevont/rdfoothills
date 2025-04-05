@@ -158,6 +158,7 @@ pub const fn to_rdflib_format(mime_type: mime::Type) -> Option<&'static str> {
         | mime::Type::Csvw
         | mime::Type::Hdt
         | mime::Type::Html
+        | mime::Type::Manchester
         | mime::Type::Microdata
         | mime::Type::NdJsonLd
         | mime::Type::NQuadsStar
