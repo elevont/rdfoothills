@@ -7,6 +7,7 @@ mod oxrdfio;
 mod pylode;
 mod rdfconvert;
 mod rdfx;
+mod robot;
 
 #[cfg(feature = "async")]
 use async_trait::async_trait;
@@ -32,6 +33,7 @@ static CONVERTERS: LazyLock<Vec<Box<dyn Converter>>> = LazyLock::new(|| {
         Box::new(rdfx::Converter),
         Box::new(rdfconvert::Converter),
         Box::new(pylode::Converter),
+        Box::new(robot::Converter),
     ];
     #[cfg(feature = "oxrdfio")]
     converters.push(Box::new(oxrdfio::Converter));
