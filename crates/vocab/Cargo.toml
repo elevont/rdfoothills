@@ -5,7 +5,7 @@
 [package]
 name = "rdfoothills-vocab"
 description = """Provides shortcuts for common RDF ontologies/vocabularies,
-as an extension to what can be foudn in `oxrdf::vocab`."""
+as an extension to what can be found in `oxrdf::vocab`."""
 readme = "README.md"
 version.workspace = true
 license.workspace = true

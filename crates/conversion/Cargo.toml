@@ -34,7 +34,7 @@ tracing = { workspace = true }
 # default = []
 default = ["oxrdfio", "async"]
 
-# Support converwsion wiht rust RDF I/O library `oxrdfio`.
+# Support conversion with rust RDF I/O library `oxrdfio`.
 oxrdfio = ["dep:oxrdfio"]
 
 # Use async/tokio (vs std).
