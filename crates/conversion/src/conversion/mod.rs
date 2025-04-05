@@ -10,9 +10,9 @@ mod rdfx;
 
 #[cfg(feature = "async")]
 use async_trait::async_trait;
-use once_cell::sync::Lazy;
 #[cfg(not(feature = "async"))]
 use std::process;
+use std::sync::LazyLock;
 #[cfg(feature = "async")]
 use tokio::process;
 
@@ -27,7 +27,7 @@ pub struct OntFile {
     pub mime_type: mime::Type,
 }
 
-static CONVERTERS: Lazy<Vec<Box<dyn Converter>>> = Lazy::new(|| {
+static CONVERTERS: LazyLock<Vec<Box<dyn Converter>>> = LazyLock::new(|| {
     let mut converters: Vec<Box<dyn Converter>> = vec![
         Box::new(rdfx::Converter),
         Box::new(rdfconvert::Converter),

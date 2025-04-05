@@ -6,9 +6,9 @@ use mediatype::{
     names::{APPLICATION, TEXT},
     MediaType,
 };
-use once_cell::sync::Lazy;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+use std::sync::LazyLock;
 use std::{
     borrow::Cow,
     ffi::OsStr,
@@ -253,7 +253,7 @@ pub fn media_type2type(media_type: &MediaType) -> Option<Type> {
     MEDIA_TYPE_2_MIME.get(&search_hash).copied()
 }
 
-pub static MEDIA_TYPE_2_MIME: Lazy<HashMap<u64, Type>> = Lazy::new(|| {
+pub static MEDIA_TYPE_2_MIME: LazyLock<HashMap<u64, Type>> = LazyLock::new(|| {
     vec![
         (MEDIA_TYPE_BINARY_RDF, Type::BinaryRdf),
         (MEDIA_TYPE_CSVW, Type::Csvw),

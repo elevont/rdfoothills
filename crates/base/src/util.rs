@@ -10,12 +10,13 @@ use std::path::Path as StdPath;
 #[cfg(feature = "async")]
 use tokio::fs;
 #[cfg(feature = "url")]
-use {once_cell::sync::Lazy, regex::Regex, url::Url};
+use {regex::Regex, std::sync::LazyLock, url::Url};
 
 #[cfg(feature = "url")]
-pub static NON_BASIC_CHARS: Lazy<Regex> = Lazy::new(|| Regex::new(r"[^a-zA-Z0-9]").unwrap());
+pub static NON_BASIC_CHARS: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"[^a-zA-Z0-9]").unwrap());
 #[cfg(feature = "url")]
-pub static MULTI_UNDERSCORES: Lazy<Regex> = Lazy::new(|| Regex::new(r"__+").unwrap());
+pub static MULTI_UNDERSCORES: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"__+").unwrap());
 
 #[cfg(feature = "url")]
 pub fn url2fname(url: &Url) -> String {
@@ -92,13 +93,10 @@ pub async fn create_dir_res_async<P: AsRef<StdPath> + Send>(dir: P) -> io::Resul
 }
 
 fn report_err_if_not_a_file(file_path: &StdPath) -> io::Result<bool> {
-    Err(io::Error::new(
-        io::ErrorKind::Other,
-        format!(
-            "Should be a file, but is not: '{}' - possible solution: delete it",
-            file_path.display()
-        ),
-    ))
+    Err(io::Error::other(format!(
+        "Should be a file, but is not: '{}' - possible solution: delete it",
+        file_path.display()
+    )))
 }
 
 /// Checks whether the given path exists and is a file.
@@ -145,9 +143,7 @@ pub fn ensure_dir_exists(dir_path: &StdPath) -> io::Result<bool> {
     let dir_path_exists = std::path::Path::try_exists(dir_path)?;
     if dir_path_exists {
         if !std::fs::metadata(dir_path)?.is_dir() {
-            return Err(io::Error::new(
-                // io::ErrorKind::NotADirectory,
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 format!("Should be an ontology cache directory, but is not a directory: '{}' - possible solution: delete it", dir_path.display())));
         }
     } else {
@@ -168,9 +164,7 @@ pub async fn ensure_dir_exists_async(dir_path: &StdPath) -> io::Result<bool> {
     let dir_path_exists = fs::try_exists(&dir_path).await?;
     if dir_path_exists {
         if !fs::metadata(&dir_path).await?.is_dir() {
-            return Err(io::Error::new(
-                // io::ErrorKind::NotADirectory,
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 format!("Should be an ontology cache directory, but is not a directory: '{}' - possible solution: delete it", dir_path.display())));
         }
     } else {

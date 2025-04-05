@@ -24,7 +24,6 @@ workspace = true
 git-version = { workspace = true }
 url = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
-once_cell = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["fs"], optional = true }
 
 [features]
@@ -35,4 +34,4 @@ default = ["async"]
 async = ["dep:tokio"]
 
 # Makes `util::url2fname` available.
-url = ["dep:url", "dep:once_cell", "dep:regex"]
+url = ["dep:url", "dep:regex"]

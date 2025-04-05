@@ -398,7 +398,7 @@ pub const NS_PREFERRED_PREFIX: &str = "{namespace_prefix}";
                 } else {
                     ""
                 },
-                subj.postfix.to_case(Case::ScreamingSnake)
+                subj.postfix.to_case(Case::Constant)
             );
             let mut subj_postfix_const = subj_postfix_const_base.clone();
             // Ensure that the chosen constant name is unique within the file

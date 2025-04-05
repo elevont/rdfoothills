@@ -44,14 +44,14 @@ macro_rules! named_node_deprecated {
 #[macro_export]
 macro_rules! typed_literal {
     ($const:ident, $value:literal, $rdf_type:expr) => {
-        pub static $const: Lazy<TermRef<'_>> =
-            Lazy::new(|| TermRef::Literal(LiteralRef::new_typed_literal($value, $rdf_type)));
+        pub static $const: LazyLock<TermRef<'_>> =
+            LazyLock::new(|| TermRef::Literal(LiteralRef::new_typed_literal($value, $rdf_type)));
     };
 }
 
 pub mod basics {
-    use once_cell::sync::Lazy;
     use oxrdf::{vocab::xsd, LiteralRef, TermRef};
+    use std::sync::LazyLock;
 
     pub const NS_BASE_RDF: &str = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 

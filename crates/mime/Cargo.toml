@@ -25,7 +25,6 @@ workspace = true
 rdfoothills-base = { workspace = true }
 infer = { workspace = true }
 mediatype = { workspace = true }
-once_cell = { workspace = true }
 # oxiri = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 thiserror = { workspace = true }

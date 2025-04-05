@@ -6,7 +6,7 @@ use std::ffi::OsStr;
 
 #[cfg(feature = "async")]
 use async_trait::async_trait;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 use super::OntFile;
 use rdfoothills_mime as mime;
@@ -17,7 +17,7 @@ pub struct Converter;
 const CLI_CMD: &str = "pylode";
 const CLI_CMD_DESC: &str = "RDF to HTML conversion";
 
-static PYLODE_ARGS_BEGIN: Lazy<Vec<&'static OsStr>> = Lazy::new(|| {
+static PYLODE_ARGS_BEGIN: LazyLock<Vec<&'static OsStr>> = LazyLock::new(|| {
     vec![
         OsStr::new("--sort"),
         OsStr::new("--css"),

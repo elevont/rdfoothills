@@ -59,7 +59,7 @@ pub fn generate(config: &Config) -> io::Result<()> {
         if config.force || !out_file.exists() {
             if written_out_files.contains(&out_file) {
                 return Err(io::Error::other(format!(
-                    "Two (or more) input ontologies result in the same output file name: {out_file:?}; please change that.")));
+                    "Two (or more) input ontologies result in the same output file name: {}; please change that.", out_file.display())));
             }
             fs::write(&out_file, rust_vocab_src)?;
             written_out_files.push(out_file);

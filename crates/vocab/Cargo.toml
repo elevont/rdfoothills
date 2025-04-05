@@ -23,6 +23,5 @@ workspace = true
 [dependencies]
 git-version = { workspace = true }
 oxrdf = { workspace = true }
-once_cell = { workspace = true }
 const_format = { workspace = true }
 
