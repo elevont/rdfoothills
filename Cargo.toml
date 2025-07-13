@@ -60,7 +60,7 @@ const_format = { version = "0.2", default-features = false }
 convert_case = "0.8"
 git-version = "0.3"
 infer = "0.19"
-mediatype = "0.19"
+mediatype = "0.20"
 oxiri = "0.2"
 oxrdf = "0.2"
 oxrdfio = { version = "0.1", features = ["rdf-star"] }
