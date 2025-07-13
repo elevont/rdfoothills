@@ -55,6 +55,6 @@ for all other conversion.
 [`onts-depot`]: https://codeberg.org/elevont/onts-depot
 [pyLODE]: https://github.com/RDFLib/pyLODE
 [RDF serialization formats]: https://ontola.io/blog/rdf-serialization-formats
-[RDF]: https://www.w3.org/RDF/
-[RDFlib]: https://rdflib.readthedocs.io
+[RDF]: https://en.wikipedia.org/wiki/Resource_Description_Framework
+[RDFlib]: https://rdflib.readthedocs.io/en/stable/
 [rdftools]: https://github.com/elevont/rdftools
