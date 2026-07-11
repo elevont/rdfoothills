@@ -349,10 +349,12 @@ impl RdfContent {
 //   sh:prefix "cmt" ;
 //   sh:namespace "https://w3id.org/oseg/ont/cmt#"^^xsd:anyURI ;
 // ] ;
+// // REUSE-IgnoreStart
 // schema:comment """
 // # SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
 // # SPDX-License-Identifier: CC-BY-SA-4.0
 // """ ;
+// // REUSE-IgnoreEnd
 // dcterms:source "https://codeberg.org/elevont/cmt-ont/master/src/ont/okh.ttl"^^xsd:anyURI ;
 // schema:codeRepository "https://codeberg.org/elevont/cmt-ont/"^^xsd:anyURI ;
 // dcat:keyword "meta", "comments", "notes" ;

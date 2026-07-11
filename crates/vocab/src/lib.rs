@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+// SPDX-FileCopyrightText: 2024 - 2026 Robin Vobruba <hoijui.quaero@gmail.com>
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-//! Provides ready to use [`NamedNodeRef`](super::NamedNodeRef)s
+//! Provides ready to use [`NamedNodeRef`](oxrdf::NamedNodeRef)s
 //! for basic RDF vocabularies.
 
 #![allow(dead_code)]
