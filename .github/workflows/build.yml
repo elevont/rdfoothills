@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 - 2024 Robin Vobruba <hoijui.quaero@gmail.com>
+# SPDX-FileCopyrightText: 2021 - 2026 Robin Vobruba <hoijui.quaero@gmail.com>
 #
 # SPDX-License-Identifier: Unlicense
 
@@ -6,7 +6,7 @@ name: build
 
 on:
   push:
-    branches: [ master, develop ]
+    branches: [ master, main, develop ]
     paths:
       - 'src/**'
       - 'tests/**'
