@@ -10,6 +10,7 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'crates/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'run/build'
