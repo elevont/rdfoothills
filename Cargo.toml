@@ -54,26 +54,26 @@ todo = "deny"
 
 [workspace.dependencies]
 async-trait = "0.1"
-clap = { version = "4.5", features = ["cargo"] }
-cli_utils = { version = "0.10", package = "cli_utils_hoijui", features = ["logging"] }
+clap = { version = "4.6", features = ["cargo"] }
+cli_utils = { version = "0.13", package = "cli_utils_hoijui", features = ["logging"] }
 const_format = { version = "0.2", default-features = false }
-convert_case = "0.8"
+convert_case = "0.11"
 git-version = "0.3"
 infer = "0.19"
-mediatype = "0.20"
+mediatype = "0.21"
 oxiri = "0.2"
-oxrdf = "0.2"
-oxrdfio = { version = "0.1", features = ["rdf-star"] }
+oxrdf = "0.3"
+oxrdfio = { version = "0.2", features = ["rdf-12"] }
 petgraph = { version = "0.8", default-features = false }
-regex = { version = "1.0", default-features = false }
+regex = { version = "1.13", default-features = false }
 rdfoothills-base = { version = "0.7.0", path = "crates/base" }
 rdfoothills-conversion = { version = "0.7.0", path = "crates/conversion" }
 rdfoothills-iri = { version = "0.7.0", path = "crates/iri" }
 rdfoothills-mime = { version = "0.7.0", path = "crates/mime" }
 serde = { version = "1.0", features = ["derive"] }
-tempfile = "3.20"
+tempfile = "3.27"
 thiserror = "2.0"
-tokio = { version = "1.46", features = ["fs", "process"] }
+tokio = { version = "1.52", features = ["fs", "process"] }
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = { version = "2.5", default-features = false }

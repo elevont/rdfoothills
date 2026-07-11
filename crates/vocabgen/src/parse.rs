@@ -11,7 +11,7 @@ use std::{
 
 use const_format::concatcp;
 use convert_case::{Case, Casing};
-use oxrdf::{NamedNode, Subject, Term};
+use oxrdf::{NamedNode, NamedOrBlankNode, Term};
 use oxrdfio::{RdfFormat, RdfParser};
 use petgraph::graph::{DefaultIx, DiGraph, NodeIndex};
 use petgraph::visit::EdgeRef;
@@ -486,7 +486,7 @@ where
     let mut parser = RdfParser::from_format(format).for_reader(input);
     let mut iri_to_graph_idx = HashMap::new();
     while let Some(Ok(quad)) = parser.next() {
-        if let Subject::NamedNode(subj) = &quad.subject {
+        if let NamedOrBlankNode::NamedNode(subj) = &quad.subject {
             let prefixes = parser.prefixes().collect::<Vec<_>>();
             let base = parser.base_iri();
 
