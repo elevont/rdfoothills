@@ -57,11 +57,11 @@ async-trait = "0.1"
 clap = { version = "4.6", features = ["cargo"] }
 cli_utils = { version = "0.13", package = "cli_utils_hoijui", features = ["logging"] }
 const_format = { version = "0.2", default-features = false }
-convert_case = "0.11"
+convert_case = "0.12"
 git-version = "0.3"
-infer = "0.19"
-mediatype = "0.21"
-oxiri = "0.2"
+infer = "0.22"
+mediatype = "0.23"
+oxiri = "0.3"
 oxrdf = "0.3"
 oxrdfio = { version = "0.2", features = ["rdf-12"] }
 petgraph = { version = "0.8", default-features = false }
