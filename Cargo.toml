@@ -23,7 +23,6 @@ description = """A collection of mostly small, RDF related utilities,
 including conversion between different serialization formats,
 using external tools."""
 repository = "https://github.com/hoijui/osh-dir-std-rs"
-homepage = "https://github.com/hoijui/osh-dir-std-rs"
 keywords = ["norm", "osh", "directory", "structure"]
 categories = ["command-line-utilities", "filesystem", "text-processing"]
 readme = "README.md"
