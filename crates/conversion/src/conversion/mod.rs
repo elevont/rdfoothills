@@ -43,7 +43,9 @@ static CONVERTERS: LazyLock<Vec<Box<dyn Converter>>> = LazyLock::new(|| {
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("The source format ({from}) format is not machine-readable, and therefore auto-conversion from it to any other format is impossible. ")]
+    #[error(
+        "The source format ({from}) format is not machine-readable, and therefore auto-conversion from it to any other format is impossible. "
+    )]
     NonMachineReadableSource { from: mime::Type },
 
     #[error("None of the supported and available converters can convert from {from} to {to}. ")]
@@ -56,7 +58,9 @@ pub enum Error {
         task: String,
     },
 
-    #[error("Running {cmd} for {task} returned with non-zero exit status '{exit_code}', indicating an error. stderr:\n{stderr}")]
+    #[error(
+        "Running {cmd} for {task} returned with non-zero exit status '{exit_code}', indicating an error. stderr:\n{stderr}"
+    )]
     ExtCmdUnsuccessful {
         cmd: String,
         task: String,
@@ -64,9 +68,7 @@ pub enum Error {
         stderr: String,
     },
 
-    #[error(
-        "Input and output formats are the same. Try to just copy the file, if really required"
-    )]
+    #[error("Input and output formats are the same. Try to just copy the file, if really required")]
     NoConversionRequired,
 
     #[error("The input file was not syntactically valid:\n{0}")]

@@ -143,8 +143,10 @@ pub fn ensure_dir_exists(dir_path: &StdPath) -> io::Result<bool> {
     let dir_path_exists = std::path::Path::try_exists(dir_path)?;
     if dir_path_exists {
         if !std::fs::metadata(dir_path)?.is_dir() {
-            return Err(io::Error::other(
-                format!("Should be an ontology cache directory, but is not a directory: '{}' - possible solution: delete it", dir_path.display())));
+            return Err(io::Error::other(format!(
+                "Should be an ontology cache directory, but is not a directory: '{}' - possible solution: delete it",
+                dir_path.display()
+            )));
         }
     } else {
         std::fs::create_dir_all(dir_path)?;
@@ -164,8 +166,10 @@ pub async fn ensure_dir_exists_async(dir_path: &StdPath) -> io::Result<bool> {
     let dir_path_exists = fs::try_exists(&dir_path).await?;
     if dir_path_exists {
         if !fs::metadata(&dir_path).await?.is_dir() {
-            return Err(io::Error::other(
-                format!("Should be an ontology cache directory, but is not a directory: '{}' - possible solution: delete it", dir_path.display())));
+            return Err(io::Error::other(format!(
+                "Should be an ontology cache directory, but is not a directory: '{}' - possible solution: delete it",
+                dir_path.display()
+            )));
         }
     } else {
         fs::create_dir_all(&dir_path).await?;

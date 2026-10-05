@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use mediatype::{
-    names::{APPLICATION, TEXT},
     MediaType,
+    names::{APPLICATION, TEXT},
 };
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};

@@ -6,8 +6,8 @@
 
 mod cli;
 
-use cli_utils::logging;
 use cli_utils::BoxResult;
+use cli_utils::logging;
 pub use rdfoothills_vocabgen as vocabgen;
 use tracing::metadata::LevelFilter;
 pub use vocabgen::config;

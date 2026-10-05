@@ -119,8 +119,7 @@ named_node!(
     PROVIDED_BY_NAMESPACE_IRI,
     NS_BASE,
     "providedByNamespaceIri",
-    "Indicates whether the subject is a content-format provided by the original namespace IRI for and within the ontology that links to it (bool)"
-    // "Indicates that the object mime-type is provided by the original IRI vs an alternative one or none at all."
+    "Indicates whether the subject is a content-format provided by the original namespace IRI for and within the ontology that links to it (bool)" // "Indicates that the object mime-type is provided by the original IRI vs an alternative one or none at all."
 );
 // named_node!(
 //     PROVIDES_MIME_TYPE_BY_ORIG_IRI,

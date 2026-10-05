@@ -50,7 +50,7 @@ macro_rules! typed_literal {
 }
 
 pub mod basics {
-    use oxrdf::{vocab::xsd, LiteralRef, TermRef};
+    use oxrdf::{LiteralRef, TermRef, vocab::xsd};
     use std::sync::LazyLock;
 
     pub const NS_BASE_RDF: &str = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -60,10 +60,6 @@ pub mod basics {
 
     #[must_use]
     pub fn rdf_bool(arg: bool) -> TermRef<'static> {
-        if arg {
-            *BOOL_TRUE
-        } else {
-            *BOOL_FALSE
-        }
+        if arg { *BOOL_TRUE } else { *BOOL_FALSE }
     }
 }

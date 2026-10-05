@@ -11,9 +11,24 @@ use crate::named_node;
 pub const NS_BASE: &str = "http://www.w3.org/ns/shacl#";
 pub const NS_PREFERRED_PREFIX: &str = "sh";
 
-named_node!(NODE_SHAPE, NS_BASE, "NodeShape", "A node shape is a shape that specifies constraint that need to be met with respect to focus nodes.");
-named_node!(PROPERTY_SHAPE, NS_BASE, "PropertyShape","A property shape is a shape that specifies constraints on the values of a focus node for a given property or path.");
-named_node!(TARGET_CLASS, NS_BASE, "targetClass", "Links a shape to a class, indicating that all instances of the class must conform to the shape.");
+named_node!(
+    NODE_SHAPE,
+    NS_BASE,
+    "NodeShape",
+    "A node shape is a shape that specifies constraint that need to be met with respect to focus nodes."
+);
+named_node!(
+    PROPERTY_SHAPE,
+    NS_BASE,
+    "PropertyShape",
+    "A property shape is a shape that specifies constraints on the values of a focus node for a given property or path."
+);
+named_node!(
+    TARGET_CLASS,
+    NS_BASE,
+    "targetClass",
+    "Links a shape to a class, indicating that all instances of the class must conform to the shape."
+);
 named_node!(
     CLOSED,
     NS_BASE,
@@ -68,15 +83,30 @@ named_node!(
     "node",
     "Specifies the node shape that all value nodes must conform to."
 );
-named_node!(PATTERN, NS_BASE, "pattern", "Specifies a regular expression pattern that the string representations of the value nodes must match.");
+named_node!(
+    PATTERN,
+    NS_BASE,
+    "pattern",
+    "Specifies a regular expression pattern that the string representations of the value nodes must match."
+);
 named_node!(
     NODE_KIND,
     NS_BASE,
     "nodeKind",
     "Specifies the node kind (e.g. IRI or literal) each value node."
 );
-named_node!(TARGET_OBJECTS_OF, NS_BASE, "targetObjectsOf", "Links a shape to a property, indicating that all all objects of triples that have the given property as their predicate must conform to the shape.");
-named_node!(TARGET_SUBJECTS_OF, NS_BASE, "targetSubjectsOf", "Links a shape to a property, indicating that all subjects of triples that have the given property as their predicate must conform to the shape.");
+named_node!(
+    TARGET_OBJECTS_OF,
+    NS_BASE,
+    "targetObjectsOf",
+    "Links a shape to a property, indicating that all all objects of triples that have the given property as their predicate must conform to the shape."
+);
+named_node!(
+    TARGET_SUBJECTS_OF,
+    NS_BASE,
+    "targetSubjectsOf",
+    "Links a shape to a property, indicating that all subjects of triples that have the given property as their predicate must conform to the shape."
+);
 named_node!(
     NAME,
     NS_BASE,
