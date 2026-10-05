@@ -201,17 +201,17 @@ impl RdfContent {
         'subj_loop: for subj_idx in &self.subjects {
             for pred_ref in self.graph.edges(*subj_idx) {
                 let pred = pred_ref.weight();
-                if let Node::Iri(pred_node) = pred {
-                    if pred_node.raw() == concatcp!(PF_RDF, "type") {
-                        let obj_idx = pred_ref.target();
-                        let obj = self.graph.node_weight(obj_idx).unwrap();
-                        if let Node::Iri(obj_node) = obj {
-                            if [concatcp!(PF_OWL, "Ontology")].contains(&obj_node.raw().as_str()) {
-                                // This is the ontology subject!
-                                ont_subj_idx_opt = Some(*subj_idx);
-                                break 'subj_loop;
-                            }
-                        }
+                if let Node::Iri(pred_node) = pred
+                    && pred_node.raw() == concatcp!(PF_RDF, "type")
+                {
+                    let obj_idx = pred_ref.target();
+                    let obj = self.graph.node_weight(obj_idx).unwrap();
+                    if let Node::Iri(obj_node) = obj
+                        && [concatcp!(PF_OWL, "Ontology")].contains(&obj_node.raw().as_str())
+                    {
+                        // This is the ontology subject!
+                        ont_subj_idx_opt = Some(*subj_idx);
+                        break 'subj_loop;
                     }
                 }
             }
@@ -233,7 +233,7 @@ impl RdfContent {
             let mut deprecation_since = None;
             let mut deprecation_message = None;
             let subj = self.graph.node_weight(*subj_idx).unwrap();
-            if let Node::Iri(ParsedNamedNode::Prefixed(ref prefxd)) = subj {
+            if let Node::Iri(ParsedNamedNode::Prefixed(prefxd)) = subj {
                 postfix = prefxd.postfix.clone();
             } else {
                 panic!("Expected prefixed node, got {subj}");
@@ -465,15 +465,15 @@ fn parse_iri(
             });
         }
     }
-    if let Some(base_iri) = base {
-        if subj.as_str().starts_with(base_iri) {
-            return ParsedNamedNode::BaseRelative(PrefixedIri {
-                prefix_name: String::new(),
-                prefix_value: base_iri.to_owned(),
-                // postfix: subj.as_str().[base_iri.len()..].to_string(),
-                postfix: subj.as_str().strip_prefix(base_iri).unwrap().to_string(),
-            });
-        }
+    if let Some(base_iri) = base
+        && subj.as_str().starts_with(base_iri)
+    {
+        return ParsedNamedNode::BaseRelative(PrefixedIri {
+            prefix_name: String::new(),
+            prefix_value: base_iri.to_owned(),
+            // postfix: subj.as_str().[base_iri.len()..].to_string(),
+            postfix: subj.as_str().strip_prefix(base_iri).unwrap().to_string(),
+        });
     }
     ParsedNamedNode::Full(subj.clone())
 }
